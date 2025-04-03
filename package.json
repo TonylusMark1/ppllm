@@ -12,6 +12,7 @@
   "keywords": "llm prompt ai vibecoding",
   "description": "Generate prompt of your project",
   "dependencies": {
+    "@types/node": "^22.14.0",
     "commander": "^13.1.0",
     "file-type": "^20.4.1",
     "isbinaryfile": "^5.0.4",
@@ -19,7 +20,6 @@
     "slash": "^5.1.0"
   },
   "devDependencies": {
-    "@types/node": "^18.0.0",
     "typescript": "^4.9.5"
   },
   "scripts": {
