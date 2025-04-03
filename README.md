@@ -1,3 +1,5 @@
+![ProjectPromptLLM logo](assets/images/logo.png)
+
 # PPLLM (ProjectPromptLLM)
 
 **CLI tool to generate descriptive prompts from your project's file structure and contents.**
