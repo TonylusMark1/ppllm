@@ -24,6 +24,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "postinstall": "npm run build"
+    "postinstall": "npm run build",
+    "gitpush": "sh -c 'git add . && git commit -m \"$1\" && git push' --"
   }
 }
