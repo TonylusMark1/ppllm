@@ -1,6 +1,5 @@
 - Muszę zrobić lepszy readme, pokazujący wszystkie możliwości
-- Dodać obrazek do README
 - Zamnienić język komentarzy w kodzie
 - Tryb interaktywny
 
-* wrzucić na npm
+- script prepare jest lepszy od postinstall bo można zrobić wtedy buildowanie które będzie automatycznie sie dzial przed npm publish
