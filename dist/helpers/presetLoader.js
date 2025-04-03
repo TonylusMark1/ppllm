@@ -1,0 +1,42 @@
+import path from 'path';
+import { promises as fs } from 'fs';
+//
+const PRESETS_DIR = path.resolve('./assets/presets/ignore');
+const GENERAL_FILENAME = '_general.ignore.json';
+//
+export async function LoadPreset(presetName, rootDir) {
+    if (presetName === 'false')
+        return [];
+    const all = [];
+    try {
+        // _general jest zawsze włączany (jeśli preset != false)
+        const general = await loadFile(GENERAL_FILENAME);
+        all.push(...general);
+    }
+    catch {
+        console.warn(`⚠️ Cannot load general preset`);
+    }
+    if (presetName !== 'general') {
+        try {
+            const preset = await loadFile(`${presetName}.ignore.json`);
+            all.push(...preset);
+        }
+        catch {
+            console.warn(`⚠️ Preset "${presetName}" not found.`);
+        }
+    }
+    return all.map(p => path.resolve(rootDir, p));
+}
+//
+async function loadFile(name) {
+    const fullPath = path.join(PRESETS_DIR, name);
+    const raw = await fs.readFile(fullPath, 'utf8');
+    return JSON.parse(raw);
+}
+//
+export async function ListAvailablePresets() {
+    const files = await fs.readdir(PRESETS_DIR);
+    return files
+        .filter(f => f.endsWith('.ignore.json') && !f.startsWith('_'))
+        .map(f => f.split('.')[0]); // np. node.ignore.json → node
+}
