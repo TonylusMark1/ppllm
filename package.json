@@ -1,0 +1,25 @@
+{
+  "name": "ppllm",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": {
+    "ppllm": "./dist/index.js"
+  },
+  "author": "tonylus",
+  "license": "ISC",
+  "description": "Generate prompt of your project",
+  "dependencies": {
+    "commander": "^13.1.0",
+    "file-type": "^20.4.1",
+    "isbinaryfile": "^5.0.4"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "typescript": "^4.9.5"
+  },
+  "scripts": {
+    "build": "tsc",
+    "postinstall": "npm run build"
+  }
+}

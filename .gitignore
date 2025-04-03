@@ -1,0 +1,9 @@
+# Node modules
+node_modules/
+
+# Pliki generowane przez system operacyjny
+.DS_Store
+Thumbs.db
+
+# Plik wynikowy
+ppllm.prompt.txt

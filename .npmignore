@@ -1,0 +1,10 @@
+# Wyklucz pliki związane z kontrolą wersji
+.gitignore
+.npmignore
+
+# Pliki generowane przez system operacyjny
+.DS_Store
+Thumbs.db
+
+# Plik wynikowy
+pllmp_result.txt
