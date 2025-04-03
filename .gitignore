@@ -1,5 +1,6 @@
 # Node modules
 node_modules/
+dist/
 
 # System-generated files
 .DS_Store
