@@ -11,6 +11,7 @@ import * as Utils from '../helpers/utils.js';
 interface CLIOptions {
     dir: string;
     config: string;
+    preset: string;
     language: string;
     binary: 'none' | 'tree' | 'all';
     maxSize: string;
@@ -96,6 +97,7 @@ function GetCLIOptions(): CLIOptions {
         .option('-c, --config <config>', 'Name of the config file', Consts.DEFAULT_CONFIG_FILENAME)
         .option('-s, --save [filename]', 'Save output to a file (optional: pass custom filename)')
         .option('--no-config', 'Disable loading config files entirely')
+        .option('-p, --preset <preset>', 'Ignore preset to use: false (none), general, or one of the available presets', 'false')
         .option('-l, --language <language>', `Message language: ${Consts.LANGUAGE_CODES.join(', ')}`, Consts.DEFAULT_LANGUAGE)
         .option('-m, --max-size <size>', 'Set maximum file size to load (e.g. 100KB, 5MB, 1GB, or 0/false for no limit)', '5MB')
         .option('-b, --binary <mode>', 'Binary file mode: none, tree (default), or all', 'tree')

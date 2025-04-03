@@ -7,6 +7,10 @@ import process from 'process';
 import { options, T } from './base/global.js';
 import * as Consts from './base/consts.js';
 
+import * as Utils from './helpers/utils.js';
+
+import { LoadPreset } from './helpers/presetLoader.js';
+
 import FileTreeScanner from './TreeScanner.js';
 import PromptGen from './PromptGen.js';
 
@@ -15,15 +19,23 @@ import PromptGen from './PromptGen.js';
 class PPLLM {
 	static async Main(): Promise<void> {
 		try {
-			const dirNode = await FileTreeScanner.ScanDir(options.dirPath, []);
+			const presetMatchers = await this.LoadPresetMatchers();
+			const dirNode = await FileTreeScanner.ScanDir(options.dirPath, presetMatchers);
 
 			const prompt = await PromptGen.Generate(dirNode);
-
 			await this.OutputResult(prompt);
 		}
 		catch (err) {
 			console.error(`${options.cli.emoji ? `${Consts.EMOJI.error} ` : ''}${T.error}`, err);
 		}
+	}
+
+	//
+
+	private static async LoadPresetMatchers() {
+		const presetPatterns = await LoadPreset(options.cli.preset, options.dirPath);
+		
+		return Utils.BuildIgnoreMatchers(options.dirPath, options.dirPath, presetPatterns);
 	}
 
 	//

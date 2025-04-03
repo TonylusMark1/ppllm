@@ -1,10 +1,9 @@
-# Wyklucz pliki związane z kontrolą wersji
+# Exclude version control related files
 .gitignore
-.npmignore
 
-# Pliki generowane przez system operacyjny
+# System-generated files
 .DS_Store
 Thumbs.db
 
-# Plik wynikowy
-pllmp_result.txt
+# Output file
+ppllm.prompt.txt

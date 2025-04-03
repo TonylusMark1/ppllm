@@ -2,11 +2,13 @@ import path from 'path';
 
 import { fileTypeFromFile } from 'file-type';
 import { isBinaryFile } from 'isbinaryfile';
+import { Minimatch } from 'minimatch';
+import slash from "slash";
 
 //
 
-export function toPosixPath(pathStr: string): string {
-    return path.posix.normalize(pathStr);
+export function ConvertPathToPOSIX(path: string) {
+	return slash(path);
 }
 
 // Funkcja parsująca rozmiar pliku; zwraca liczbę bajtów.
@@ -53,4 +55,20 @@ export async function IsFileBinary(filePath: string): Promise<boolean> {
 	}
 
 	return await isBinaryFile(filePath);
+}
+
+//
+
+export function BuildIgnoreMatchers(rootDir: string, dir: string, ignorePatterns: string[]): Minimatch[] {
+	return ignorePatterns.map(p => {
+		const patternAbsolute = path.resolve(dir, p);
+		const relativeToRoot = path.relative(rootDir, patternAbsolute);
+
+		const pattern = ConvertPathToPOSIX(relativeToRoot);
+
+		return new Minimatch(pattern, {
+			dot: true,
+			matchBase: false
+		});
+	});
 }

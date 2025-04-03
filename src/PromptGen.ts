@@ -86,7 +86,7 @@ export default class PromptGen {
 				console.log(readErrorMsg);
 			}
 
-			const filePathWithRoot = Utils.toPosixPath(path.join(root.fileName, file.relativePath));
+			const filePathWithRoot = path.join(root.fileName, file.relativePath);
 			output += `${T.file}: ${options.cli.emoji ? `${file.emoji} ` : ''}${filePathWithRoot}\n\n`;
 
 			if (placeholder) {
@@ -168,7 +168,7 @@ export default class PromptGen {
 		for (const child of node.files) {
 			if (child instanceof TreeNodeDir) {
 				if (child.config && child.config.prompt) {
-					const filePathWithRoot = Utils.toPosixPath(path.join(root.fileName, child.relativePath));
+					const filePathWithRoot = path.join(root.fileName, child.relativePath);
 
 					results.push({
 						directory: filePathWithRoot,

@@ -12,7 +12,9 @@
   "dependencies": {
     "commander": "^13.1.0",
     "file-type": "^20.4.1",
-    "isbinaryfile": "^5.0.4"
+    "isbinaryfile": "^5.0.4",
+    "minimatch": "^10.0.1",
+    "slash": "^5.1.0"
   },
   "devDependencies": {
     "@types/node": "^18.0.0",

@@ -35,6 +35,7 @@ ppllm
 | `-c, --config`      | Name of the config file (default: `ppllm.config.json`)           |
 | `-s, --save`        | Save output to file (optionally pass filename)                   |
 | `--no-config`       | Disable loading config files entirely                            |
+| `-p, --preset <name>`  | Use ignore preset: `none` (default), `general`, or one of: `node`, `python`, etc. |
 | `-l, --language`    | Language of messages: `eng` (default), `pl`, `es`, `fr`, `hu`, `cs`, `zh`, `ja` |
 | `-m, --max-size <size>` | Max file size to include (e.g. `5MB`, `100KB`, or `0`/`false` to disable limit) |
 | `-b, --binary <mode>` | Binary file mode: `none`, `tree` (default), or `all` *(see below)* |

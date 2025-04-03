@@ -1,9 +1,9 @@
 # Node modules
 node_modules/
 
-# Pliki generowane przez system operacyjny
+# System-generated files
 .DS_Store
 Thumbs.db
 
-# Plik wynikowy
+# Output file
 ppllm.prompt.txt
