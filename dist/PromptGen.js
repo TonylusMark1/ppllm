@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import { options, T } from './base/global.js';
+import ctx from './base/context.js';
 import * as Consts from './base/consts.js';
 import * as ExtEmojis from "./helpers/extEmojis.js";
 import { TreeNode, TreeNodeDir } from './TreeNode.js';
@@ -10,37 +10,37 @@ export default class PromptGen {
         const structure = this.PrintTree(root);
         let output = '';
         //
-        output += `${T.promptPlaceholder}\n\n`;
+        output += `${ctx.T.promptPlaceholder}\n\n`;
         //
         // Jeśli główny (zewnętrzny) config zawiera prompt – wyświetl go od razu po placeholderze
         if (root.config && root.config.prompt) {
             output += root.config.prompt + '\n\n';
         }
         //
-        output += `${options.cli.emoji ? `${Consts.EMOJI.fileStructure} ` : ''}${T.fileStructure}\n\n`;
+        output += `${ctx.settings.emoji ? `${Consts.EMOJI.fileStructure} ` : ''}${ctx.T.fileStructure}\n\n`;
         output += structure + '\n\n';
         //
         const innerPrompts = this.collectInnerPrompts(root); // Zbieramy inner prompty z wszystkich zagnieżdżonych katalogów
         if (innerPrompts.length)
             output += this.PrintInnerPrompts(root, innerPrompts) + "\n\n";
         //
-        output += `${options.cli.emoji ? `${Consts.EMOJI.fileContents} ` : ''}${T.fileContents}\n\n`;
+        output += `${ctx.settings.emoji ? `${Consts.EMOJI.fileContents} ` : ''}${ctx.T.fileContents}\n\n`;
         const flatFiles = TreeNode.Flatten(root.files);
         flatFiles.sort((a, b) => a.relativePath.localeCompare(b.relativePath));
         for (const file of flatFiles) {
-            if (file.isBinary && options.cli.binary !== 'all')
+            if (file.isBinary && ctx.settings.binary !== 'all')
                 continue; // Pomijamy binarne pliki z wyjątkiem trybu 'all'
             //
             let content = '';
             let placeholder = false;
             try {
                 const stats = await fs.stat(file.absolutePath);
-                if (options.maxSizeBytes && stats.size > options.maxSizeBytes) {
-                    content = `[${T.largeFile}]`;
+                if (ctx.fileContentMaxSizeInBytes && stats.size > ctx.fileContentMaxSizeInBytes) {
+                    content = `[${ctx.T.largeFile}]`;
                     placeholder = true;
                 }
                 else if (file.isBinary) {
-                    content = `[${T.binaryFile}]`;
+                    content = `[${ctx.T.binaryFile}]`;
                     placeholder = true;
                 }
                 else {
@@ -48,13 +48,13 @@ export default class PromptGen {
                 }
             }
             catch {
-                const readErrorMsg = T.readError(file.absolutePath);
+                const readErrorMsg = ctx.T.readError(file.absolutePath);
                 content = `[${readErrorMsg}]`;
                 placeholder = true;
                 console.log(readErrorMsg);
             }
             const filePathWithRoot = path.join(root.fileName, file.relativePath);
-            output += `${T.file}: ${options.cli.emoji ? `${file.emoji} ` : ''}${filePathWithRoot}\n\n`;
+            output += `${ctx.T.file}: ${ctx.settings.emoji ? `${file.emoji} ` : ''}${filePathWithRoot}\n\n`;
             if (placeholder) {
                 output += content + '\n\n';
             }
@@ -70,7 +70,7 @@ export default class PromptGen {
     // Nowa funkcja wypisująca strukturę drzewa z root wypisanym osobno (bez łączników)
     static PrintTree(root) {
         // Wypisz root bez prefiksu (bez łączników)
-        let out = `${options.cli.emoji ? `${root.emoji} ` : ''}${root.fileName}${!options.cli.emoji ? '/' : ''}\n`;
+        let out = `${ctx.settings.emoji ? `${root.emoji} ` : ''}${root.fileName}${!ctx.settings.emoji ? '/' : ''}\n`;
         out += this.PrintTreeRecursive(root.files, '');
         return out;
     }
@@ -87,7 +87,7 @@ export default class PromptGen {
         sorted.forEach((node, index) => {
             const isLast = index === sorted.length - 1;
             const connector = isLast ? '└─' : '├─';
-            const line = `${prefix}${connector} ${options.cli.emoji ? `${node.emoji} ` : ''}${node.fileName}${node instanceof TreeNodeDir && !options.cli.emoji ? '/' : ''}`;
+            const line = `${prefix}${connector} ${ctx.settings.emoji ? `${node.emoji} ` : ''}${node.fileName}${node instanceof TreeNodeDir && !ctx.settings.emoji ? '/' : ''}`;
             lines.push(line);
             if (node instanceof TreeNodeDir && node.files.length > 0) {
                 const subtree = this.PrintTreeRecursive(node.files, isLast ? prefix + '   ' : prefix + '│  ');
@@ -100,10 +100,10 @@ export default class PromptGen {
     }
     //
     static PrintInnerPrompts(root, innerPrompts) {
-        return (`${options.cli.emoji ? `${Consts.EMOJI.innerPromptsHeader} ` : ''}${T.innerPromptsHeader}\n\n` +
+        return (`${ctx.settings.emoji ? `${Consts.EMOJI.innerPromptsHeader} ` : ''}${ctx.T.innerPromptsHeader}\n\n` +
             innerPrompts
                 .map(ip => {
-                return (`${options.cli.emoji ? `${ExtEmojis.folder} ` : ''}${ip.directory} - ${T.innerPromptRules}:\n\n` +
+                return (`${ctx.settings.emoji ? `${ExtEmojis.folder} ` : ''}${ip.directory} - ${ctx.T.innerPromptRules}:\n\n` +
                     `${ip.prompt}`);
             })
                 .join("\n\n"));

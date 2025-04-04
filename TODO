@@ -1,3 +1,5 @@
 - Muszę zrobić lepszy readme, pokazujący wszystkie możliwości
 - Zamnienić język komentarzy w kodzie
 - Tryb interaktywny
+
+- nie działa ppllm globalnie w C:\Users\SomeUser, dlaczego?

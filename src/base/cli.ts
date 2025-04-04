@@ -19,7 +19,7 @@ export interface CLISettingsOptions {
     maxSize: string;
     binary: "none" | "tree" | "all";
     language: string;
-    emoji: boolean | string;
+    emoji: boolean;
 }
 
 //
@@ -61,6 +61,15 @@ export default function GetCLIOptions(): CLIOptions {
     const cli: CLIOptions = cmd.opts();
 
     //
+
+    if (cli.emoji !== undefined) {
+        if ( typeof cli.emoji === "string" ) {
+            if ( ["true", "yes", "y", "enable", "enabled"].includes((cli.emoji as string).toLowerCase()) )
+                cli.emoji = true;
+            else
+                cli.emoji = false;
+        }
+    }
 
     if (cli.binary) {
         if (!['none', 'tree', 'all'].includes(cli.binary)) {

@@ -1,18 +1,17 @@
 import path from 'path';
 import { promises as fs } from 'fs';
-import { options } from './base/global.js';
-import ConfigHandler from "./ConfigHandler.js";
+import ctx from './base/context.js';
 import * as Utils from './helpers/utils.js';
 import { TreeNodeDir, TreeNodeFile } from './TreeNode.js';
 //
 export default class FileTreeScanner {
     static async ScanDir(dir, matchers) {
-        const config = await this.ReadConfigFile(dir, options.configFileName);
+        const config = ctx.readConfigFile(path.join(dir, ctx.cli.config));
         const newPatterns = config?.ignore ?? [];
-        const combinedMatchers = matchers.concat(Utils.BuildIgnoreMatchers(options.dirPath, dir, newPatterns));
+        const combinedMatchers = matchers.concat(Utils.BuildIgnoreMatchers(ctx.absoluteSourceDirectory, dir, newPatterns));
         //
         const absPath = path.resolve(dir);
-        const relativePath = path.relative(options.dirPath, absPath) || '.';
+        const relativePath = path.relative(ctx.absoluteSourceDirectory, absPath) || '.';
         const node = new TreeNodeDir(relativePath, absPath, path.basename(dir), config);
         //
         const items = await fs.readdir(dir, { withFileTypes: true });
@@ -20,9 +19,9 @@ export default class FileTreeScanner {
             const itemPath = path.join(dir, item.name);
             const itemAbsPath = path.resolve(itemPath);
             //
-            if (item.name === options.configFileName)
+            if (item.name === ctx.cli.config)
                 continue;
-            if (options.outputPath && itemAbsPath === options.outputPath)
+            if (ctx.absoluteOutputPath && itemAbsPath === ctx.absoluteOutputPath)
                 continue;
             if (this.IsIgnored(itemAbsPath, combinedMatchers))
                 continue;
@@ -33,26 +32,18 @@ export default class FileTreeScanner {
             }
             else if (item.isFile()) {
                 const isBinary = await Utils.IsFileBinary(itemAbsPath);
-                if (options.cli.binary === 'none' && isBinary)
+                if (ctx.settings.binary === 'none' && isBinary)
                     continue;
-                node.files.push(new TreeNodeFile(path.relative(options.dirPath, itemAbsPath), itemAbsPath, item.name, isBinary));
+                node.files.push(new TreeNodeFile(path.relative(ctx.absoluteSourceDirectory, itemAbsPath), itemAbsPath, item.name, isBinary));
             }
         }
         return node;
     }
     //
     static IsIgnored(itemPath, matchers) {
-        const relativePath = path.relative(options.dirPath, itemPath);
+        const relativePath = path.relative(ctx.absoluteSourceDirectory, itemPath);
         const posix = Utils.ConvertPathToPOSIX(relativePath);
         //console.log(`## ${posix.padEnd(45)}, matchers: ${matchers.map(m => `${m.match(posix) ? "✅" : "❌"} ${m.pattern}`).join(" ")}`);
         return matchers.some(m => m.match(posix));
-    }
-    //
-    static async ReadConfigFile(directory, configFileName) {
-        if (configFileName !== false) {
-            const configFilePath = path.join(directory, configFileName);
-            return await ConfigHandler.ReadConfigFile(configFilePath);
-        }
-        return undefined;
     }
 }

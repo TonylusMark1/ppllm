@@ -9,7 +9,7 @@ export function ConvertPathToPOSIX(path) {
 }
 // Funkcja parsująca rozmiar pliku; zwraca liczbę bajtów.
 export function ConvertSizeToBytes(input) {
-    const match = /^(\d+)(B|KB|MB|GB)?$/i.exec(input);
+    const match = /^(\d+) *(B|KB|MB|GB)?$/i.exec(input);
     if (!match)
         throw new Error(`Invalid max size value: ${input}`);
     const number = parseInt(match[1], 10);
