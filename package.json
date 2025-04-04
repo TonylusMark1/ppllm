@@ -1,6 +1,6 @@
 {
   "name": "ppllm",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
@@ -9,7 +9,12 @@
   "author": "tonylus",
   "license": "ISC",
   "repository": "https://github.com/TonylusMark1/ppllm",
-  "keywords": ["llm", "prompt", "ai", "vibecoding"],
+  "keywords": [
+    "llm",
+    "prompt",
+    "ai",
+    "vibecoding"
+  ],
   "description": "Generate prompt of your project",
   "dependencies": {
     "commander": "^13.1.0",
