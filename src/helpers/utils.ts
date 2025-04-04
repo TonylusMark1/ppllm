@@ -1,4 +1,5 @@
 import path from 'path';
+import fs from 'fs';
 
 import { fileTypeFromFile } from 'file-type';
 import { isBinaryFile } from 'isbinaryfile';
@@ -13,7 +14,7 @@ export function ConvertPathToPOSIX(path: string) {
 
 // Funkcja parsująca rozmiar pliku; zwraca liczbę bajtów.
 export function ConvertSizeToBytes(input: string): number {
-	const match = /^(\d+)(B|KB|MB|GB)?$/i.exec(input);
+	const match = /^(\d+) *(B|KB|MB|GB)?$/i.exec(input);
 
 	if (!match)
 		throw new Error(`Invalid max size value: ${input}`);

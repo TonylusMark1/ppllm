@@ -31,17 +31,19 @@ ppllm
 
 ### Options
 -----------------
-| Option              | Description                                                      |
-|---------------------|------------------------------------------------------------------|
-| `-d, --dir <dir>`   | Source directory to scan (default is current working directory)  |
-| `-c, --config`      | Name of the config file (default: `ppllm.config.json`)           |
-| `-s, --save`        | Save output to file (optionally pass filename)                   |
-| `--no-config`       | Disable loading config files entirely                            |
-| `-p, --preset <name>`  | Use ignore preset: `none` (default), `general`, or one of: `node`, `python`, etc. |
-| `-l, --language`    | Language of messages: `eng` (default), `pl`, `es`, `fr`, `hu`, `cs`, `zh`, `ja` |
-| `-m, --max-size <size>` | Max file size to include (e.g. `5MB`, `100KB`, or `0`/`false` to disable limit) |
-| `-b, --binary <mode>` | Binary file mode: `none`, `tree` (default), or `all` *(see below)* |
-| `-e, --emoji`       | Render emojis in prompt                                          |
+
+| Option                         | Description                                                                           |
+|--------------------------------|---------------------------------------------------------------------------------------|
+| `-d, --dir <dir>`              | Source directory to scan (default is current working directory)                       |
+| `-o, --output` <mode>          | Output mode: `file` (default) or `stdout`                                             |
+| `-f, --file` <filename>        | Filename for output file (default: `ppllm.prompt.txt`)                                |
+| `-p, --preset <name>`          | Use ignore preset: `none` (default), `general`, or one of: `node`, `python`, etc.     |
+| `-c, --config`                 | Name of the config file (default: `ppllm.config.json`)                                |
+| `-m, --max-size <size>`        | Max file size to include (e.g. `5MB`, `100KB`, or `0`/`false` to disable limit)       |
+| `-b, --binary <mode>`          | Binary file mode: `none`, `tree` (default), or `all`                                  |
+| `-l, --language`               | Language of messages: `eng` (default), `pl`, `es`, `fr`, `hu`, `cs`, `zh`, `ja`       |
+| `-e, --emoji`                  | Render emojis in prompt                                                               |
+| `--no-config`                  | Disable loading config files entirely                                                 |
 
 ### 🌐 Supported Languages
 -----------------
@@ -49,8 +51,8 @@ Changing language affects generated prompt and all stdout messages.
 
 The following language codes can be used with `--language`:
 
-| Code | Language       |
-|------|----------------|
+| Code  | Language       |
+|-------|----------------|
 | `eng` | English        |
 | `pl`  | Polish         |
 | `es`  | Spanish        |
@@ -93,7 +95,11 @@ You can create a `ppllm.config.json` file in any folder to customize prompt gene
 ```json
 {
   "prompt": "[Additional rules for LLM just in this folder goes here]",
-  "ignore": ["tests/", "legacy/", "./some-unimportant-file.json"]
+  "ignore": [
+    "tests/",
+    "legacy/",
+    "./some-unimportant-file.json"
+  ]
 }
 ```
 

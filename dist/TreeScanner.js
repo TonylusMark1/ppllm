@@ -1,12 +1,13 @@
 import path from 'path';
 import { promises as fs } from 'fs';
-import { options, T } from './base/global.js';
+import { options } from './base/global.js';
+import ConfigHandler from "./ConfigHandler.js";
 import * as Utils from './helpers/utils.js';
 import { TreeNodeDir, TreeNodeFile } from './TreeNode.js';
 //
 export default class FileTreeScanner {
     static async ScanDir(dir, matchers) {
-        const config = await this.ReadConfigFile(dir);
+        const config = await this.ReadConfigFile(dir, options.configFileName);
         const newPatterns = config?.ignore ?? [];
         const combinedMatchers = matchers.concat(Utils.BuildIgnoreMatchers(options.dirPath, dir, newPatterns));
         //
@@ -21,7 +22,7 @@ export default class FileTreeScanner {
             //
             if (item.name === options.configFileName)
                 continue;
-            if (options.savePath && itemAbsPath === options.savePath)
+            if (options.outputPath && itemAbsPath === options.outputPath)
                 continue;
             if (this.IsIgnored(itemAbsPath, combinedMatchers))
                 continue;
@@ -47,28 +48,10 @@ export default class FileTreeScanner {
         return matchers.some(m => m.match(posix));
     }
     //
-    static async ReadConfigFile(directory) {
-        if (options.configFileName !== false) {
-            const configFilePath = path.join(directory, options.configFileName);
-            try {
-                await fs.access(configFilePath);
-                const content = await fs.readFile(configFilePath, 'utf8');
-                try {
-                    const config = JSON.parse(content);
-                    if (Array.isArray(config.ignore)) {
-                        config.ignore.forEach((p, i, list) => {
-                            list[i] = path.resolve(directory, p);
-                        });
-                    }
-                    return config;
-                }
-                catch (e) {
-                    console.log(T.configReadingError(configFilePath));
-                }
-            }
-            catch (_) {
-                // brak pliku konfiguracyjnego – OK
-            }
+    static async ReadConfigFile(directory, configFileName) {
+        if (configFileName !== false) {
+            const configFilePath = path.join(directory, configFileName);
+            return await ConfigHandler.ReadConfigFile(configFilePath);
         }
         return undefined;
     }

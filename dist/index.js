@@ -28,13 +28,13 @@ class PPLLM {
     }
     //
     static async OutputResult(prompt) {
-        if (!options.savePath) {
+        if (!options.outputPath) {
             process.stdout.write(prompt, 'utf8');
         }
         else {
-            await fs.writeFile(options.savePath, prompt, 'utf8');
-            const relPath = path.relative(process.cwd(), options.savePath);
-            const displayPath = relPath.startsWith('..') ? options.savePath : `./${relPath}`;
+            await fs.writeFile(options.outputPath, prompt, 'utf8');
+            const relPath = path.relative(process.cwd(), options.outputPath);
+            const displayPath = relPath.startsWith('..') ? options.outputPath : `./${relPath}`;
             console.log(`${options.cli.emoji ? `${Consts.EMOJI.success} ` : ''}${T.successFile(displayPath)}`);
         }
     }

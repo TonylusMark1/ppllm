@@ -24,22 +24,16 @@ function GetOptions() {
         }
     })();
     //
-    const savePath = (() => {
-        if (cli.save) {
-            const filename = cli.save === true ? Consts.DEFAULT_SAVE_FILENAME : cli.save;
-            return path.resolve(process.cwd(), filename);
-        }
-        return null;
-    })();
     const dirPath = path.resolve(process.cwd(), cli.dir);
+    const outputPath = path.resolve(process.cwd(), cli.file);
     //
     const configFileName = cli.noConfig ? false : cli.config;
     //
     return {
         cli,
         maxSizeBytes,
-        savePath,
         dirPath,
+        outputPath,
         configFileName
     };
 }
@@ -47,19 +41,38 @@ function GetCLIOptions() {
     const program = new Command();
     program
         .option('-d, --dir <dir>', 'Source directory to scan', '.')
-        .option('-c, --config <config>', 'Name of the config file', Consts.DEFAULT_CONFIG_FILENAME)
-        .option('-s, --save [filename]', 'Save output to a file (optional: pass custom filename)')
+        .option('-o, --output <mode>', 'Output mode: file (default) or stdout', 'file')
+        .option('-f, --file [filename]', 'Filename for output file (default: ppllm.prompt.txt)', Consts.DEFAULT_OUTPUT_FILENAME)
         .option('-p, --preset <preset>', 'Ignore preset to use: false (none), general, or one of the available presets', 'false')
-        .option('-l, --language <language>', `Message language: ${Consts.LANGUAGE_CODES.join(', ')}`, Consts.DEFAULT_LANGUAGE)
+        .option('-c, --config <config>', 'Name of the config file', Consts.DEFAULT_CONFIG_FILENAME)
         .option('-m, --max-size <size>', 'Set maximum file size to load (e.g. 100KB, 5MB, 1GB, or 0/false for no limit)', '5MB')
         .option('-b, --binary <mode>', 'Binary file mode: none, tree (default), or all', 'tree')
+        .option('-l, --language <language>', `Message language: ${Consts.LANGUAGE_CODES.join(', ')}`, Consts.DEFAULT_LANGUAGE)
         .option('-e, --emoji', 'Render emoji in prompt')
+        .option('-s, --store', 'Store used settings into root config')
         .option('--no-config', 'Disable loading config files entirely');
     program.parse(process.argv);
     const cli = program.opts();
     //
+    cli.emoji = (() => {
+        if (typeof cli.emoji === 'string') {
+            if (['true', 'yes', 'y', 'enable', 'enabled'].includes(cli.emoji.toLowerCase()))
+                return true;
+            else
+                return false;
+        }
+        else
+            return Boolean(cli.emoji);
+    })();
+    //
     if (!['none', 'tree', 'all'].includes(cli.binary)) {
         console.error(`${options.cli.emoji ? `${Consts.EMOJI.error} ` : ''}Invalid value for --binary: ${cli.binary}`);
+        process.exit(1);
+    }
+    //
+    // Walidacja output mode
+    if (!['file', 'stdout'].includes(cli.output)) {
+        console.error(`${options.cli.emoji ? `${Consts.EMOJI.error} ` : ''}Invalid value for --output: ${cli.output}`);
         process.exit(1);
     }
     //

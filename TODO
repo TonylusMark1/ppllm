@@ -1,8 +1,3 @@
 - Muszę zrobić lepszy readme, pokazujący wszystkie możliwości
 - Zamnienić język komentarzy w kodzie
 - Tryb interaktywny
-
-- script prepare jest lepszy od postinstall bo można zrobić wtedy buildowanie które będzie automatycznie sie dzial przed npm publish
-
-- przenieść images do /public zamiast /assets
-- uzupelnic .npmignore bo duzo rzeczy np src nie musi byc skoro jest dist i inne jak tsconfig

@@ -3,8 +3,7 @@ import { promises as fs } from 'fs';
 
 import { Minimatch } from 'minimatch';
 
-import { options, T } from './base/global.js';
-import Config from "./base/config.js"
+import ctx from './base/context.js';
 
 import * as Utils from './helpers/utils.js';
 
@@ -14,15 +13,15 @@ import { TreeNodeDir, TreeNodeFile } from './TreeNode.js';
 
 export default class FileTreeScanner {
     static async ScanDir(dir: string, matchers: Minimatch[]): Promise<TreeNodeDir> {
-        const config = await this.ReadConfigFile(dir);
+        const config = ctx.readConfigFile(path.join(dir, ctx.cli.config));
 
         const newPatterns: string[] = config?.ignore ?? [];
-        const combinedMatchers = matchers.concat(Utils.BuildIgnoreMatchers(options.dirPath, dir, newPatterns));
+        const combinedMatchers = matchers.concat(Utils.BuildIgnoreMatchers(ctx.absoluteSourceDirectory, dir, newPatterns));
 
         //
 
         const absPath = path.resolve(dir);
-        const relativePath = path.relative(options.dirPath, absPath) || '.';
+        const relativePath = path.relative(ctx.absoluteSourceDirectory, absPath) || '.';
 
         const node = new TreeNodeDir(relativePath, absPath, path.basename(dir), config);
 
@@ -36,10 +35,10 @@ export default class FileTreeScanner {
 
             //
 
-            if (item.name === options.configFileName)
+            if (item.name === ctx.cli.config)
                 continue;
 
-            if (options.savePath && itemAbsPath === options.savePath)
+            if (ctx.absoluteOutputPath && itemAbsPath === ctx.absoluteOutputPath)
                 continue;
 
             if (this.IsIgnored(itemAbsPath, combinedMatchers))
@@ -54,11 +53,11 @@ export default class FileTreeScanner {
             else if (item.isFile()) {
                 const isBinary = await Utils.IsFileBinary(itemAbsPath);
 
-                if (options.cli.binary === 'none' && isBinary)
+                if (ctx.settings.binary === 'none' && isBinary)
                     continue;
 
                 node.files.push(new TreeNodeFile(
-                    path.relative(options.dirPath, itemAbsPath),
+                    path.relative(ctx.absoluteSourceDirectory, itemAbsPath),
                     itemAbsPath,
                     item.name,
                     isBinary
@@ -72,45 +71,11 @@ export default class FileTreeScanner {
     //
 
     private static IsIgnored(itemPath: string, matchers: Minimatch[]): boolean {
-        const relativePath = path.relative(options.dirPath, itemPath);
+        const relativePath = path.relative(ctx.absoluteSourceDirectory, itemPath);
         const posix = Utils.ConvertPathToPOSIX(relativePath);
 
         //console.log(`## ${posix.padEnd(45)}, matchers: ${matchers.map(m => `${m.match(posix) ? "✅" : "❌"} ${m.pattern}`).join(" ")}`);
 
         return matchers.some(m => m.match(posix));
-    }
-
-    //
-
-    private static async ReadConfigFile(directory: string) {
-        if (options.configFileName !== false) {
-            const configFilePath = path.join(directory, options.configFileName);
-
-            try {
-                await fs.access(configFilePath);
-
-                const content = await fs.readFile(configFilePath, 'utf8');
-
-                try {
-                    const config = <Config>JSON.parse(content);
-
-                    if (Array.isArray(config.ignore)) {
-                        config.ignore.forEach((p, i, list) => {
-                            list[i] = path.resolve(directory, p);
-                        });
-                    }
-
-                    return config;
-                }
-                catch (e) {
-                    console.log(T.configReadingError(configFilePath));
-                }
-            }
-            catch (_) {
-                // brak pliku konfiguracyjnego – OK
-            }
-        }
-
-        return undefined;
     }
 }

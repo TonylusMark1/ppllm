@@ -1,4 +1,4 @@
-import Config from "./base/config.js"
+import type {Config} from "./base/context.js"
 
 import * as ExtEmojis from "./helpers/extEmojis.js";
 
