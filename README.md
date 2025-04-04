@@ -1,4 +1,4 @@
-![ProjectPromptLLM logo](assets/images/logo.png)
+![ProjectPromptLLM logo](public/images/logo.png)
 
 # PPLLM (ProjectPromptLLM)
 

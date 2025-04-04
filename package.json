@@ -9,7 +9,7 @@
   "author": "tonylus",
   "license": "ISC",
   "repository": "https://github.com/TonylusMark1/ppllm",
-  "keywords": "llm prompt ai vibecoding",
+  "keywords": ["llm", "prompt", "ai", "vibecoding"],
   "description": "Generate prompt of your project",
   "dependencies": {
     "commander": "^13.1.0",

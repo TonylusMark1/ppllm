@@ -7,3 +7,10 @@ Thumbs.db
 
 # Output file
 ppllm.prompt.txt
+
+# Exclude files and folder to leave only essential files
+public
+src
+CHANGELOG.md
+TODO
+tsconfig.json

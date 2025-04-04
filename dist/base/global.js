@@ -49,12 +49,12 @@ function GetCLIOptions() {
         .option('-d, --dir <dir>', 'Source directory to scan', '.')
         .option('-c, --config <config>', 'Name of the config file', Consts.DEFAULT_CONFIG_FILENAME)
         .option('-s, --save [filename]', 'Save output to a file (optional: pass custom filename)')
-        .option('--no-config', 'Disable loading config files entirely')
         .option('-p, --preset <preset>', 'Ignore preset to use: false (none), general, or one of the available presets', 'false')
         .option('-l, --language <language>', `Message language: ${Consts.LANGUAGE_CODES.join(', ')}`, Consts.DEFAULT_LANGUAGE)
         .option('-m, --max-size <size>', 'Set maximum file size to load (e.g. 100KB, 5MB, 1GB, or 0/false for no limit)', '5MB')
         .option('-b, --binary <mode>', 'Binary file mode: none, tree (default), or all', 'tree')
-        .option('-e, --emoji', 'Render emoji in prompt');
+        .option('-e, --emoji', 'Render emoji in prompt')
+        .option('--no-config', 'Disable loading config files entirely');
     program.parse(process.argv);
     const cli = program.opts();
     //
