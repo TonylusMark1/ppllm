@@ -1,6 +1,6 @@
-import type {Config} from "./base/context.js"
+import * as Emoji from "./global/emoji.js";
 
-import * as ExtEmojis from "./helpers/extEmojis.js";
+import type {DirConfig} from "./index.js"
 
 //
 
@@ -43,16 +43,16 @@ export class TreeNode {
 
 export class TreeNodeDir extends TreeNode {
     readonly files: TreeNode[] = [];
-    readonly config?: Config;
+    readonly dirconfig?: DirConfig;
 
     //
 
-    constructor(relativePath: string, absolutePath: string, fileName: string, config?: Config) {
+    constructor(relativePath: string, absolutePath: string, fileName: string, dirconfig?: DirConfig) {
         super(relativePath, absolutePath, fileName);
 
         //
 
-        this.config = config;
+        this.dirconfig = dirconfig;
     }
 
     //
@@ -63,7 +63,7 @@ export class TreeNodeDir extends TreeNode {
 
 
     get emoji() {
-        return this.isEmptyDir ? ExtEmojis.emptyFolder : ExtEmojis.folder;
+        return this.isEmptyDir ? Emoji.Files.General.EmptyFolder : Emoji.Files.General.Folder;
     }
 }
 
@@ -95,11 +95,11 @@ export class TreeNodeFile extends TreeNode {
     get emoji() {
         let emoji = '';
 
-        if (this.ext && ExtEmojis.specific[this.ext]) {
-            emoji = ExtEmojis.specific[this.ext];
+        if (this.ext && Emoji.Files.PerExt[this.ext]) {
+            emoji = Emoji.Files.PerExt[this.ext];
         }
         else {
-            emoji = this.isBinary ? ExtEmojis.anyBinaryFile : ExtEmojis.anyNonBinaryFile;
+            emoji = this.isBinary ? Emoji.Files.General.AnyBinaryFile : Emoji.Files.General.AnyNonBinaryFile;
         }
 
         return emoji;

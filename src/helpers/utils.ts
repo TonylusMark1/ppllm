@@ -1,9 +1,5 @@
-import path from 'path';
-import fs from 'fs';
-
 import { fileTypeFromFile } from 'file-type';
 import { isBinaryFile } from 'isbinaryfile';
-import { Minimatch } from 'minimatch';
 import slash from "slash";
 
 //
@@ -56,20 +52,4 @@ export async function IsFileBinary(filePath: string): Promise<boolean> {
 	}
 
 	return await isBinaryFile(filePath);
-}
-
-//
-
-export function BuildIgnoreMatchers(rootDir: string, dir: string, ignorePatterns: string[]): Minimatch[] {
-	return ignorePatterns.map(p => {
-		const patternAbsolute = path.resolve(dir, p);
-		const relativeToRoot = path.relative(rootDir, patternAbsolute);
-
-		const pattern = ConvertPathToPOSIX(relativeToRoot);
-
-		return new Minimatch(pattern, {
-			dot: true,
-			matchBase: false
-		});
-	});
 }

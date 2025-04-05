@@ -1,5 +1,8 @@
 - Muszę zrobić lepszy readme, pokazujący wszystkie możliwości
 - Zamnienić język komentarzy w kodzie
 - Tryb interaktywny
+- Zsynchronizować console.warn/log w presetLoader z tym jak to robimy gdzie indziej i obsluga emoji na podstawie settings
+- "Settings saved to" - też zrobić żeby uzywalo i18n
+- Jakiś fajny prosty logger
 
 - nie działa ppllm globalnie w C:\Users\SomeUser, dlaczego?
