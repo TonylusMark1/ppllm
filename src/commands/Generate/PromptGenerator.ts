@@ -1,9 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 
-import * as Emoji from './global/emoji.js';
+import * as Emoji from '../../global/emoji.js';
 
-import type PPLLM from './index.js';
+import type CommandGenerate from './index.js';
 import { TreeNode, TreeNodeDir } from './TreeNode.js';
 
 //
@@ -16,12 +16,12 @@ interface InnerPromptEntity {
 //
 
 export default class PromptGenerator {
-	private readonly ppllm: PPLLM;
+	private readonly command: CommandGenerate;
 
 	//
 
-	constructor(ppllm: PPLLM) {
-		this.ppllm = ppllm;
+	constructor(command: CommandGenerate) {
+		this.command = command;
 	}
 
 	//
@@ -33,7 +33,7 @@ export default class PromptGenerator {
 
 		//
 
-		output += `${this.ppllm.T.promptPlaceholder}\n\n`;
+		output += `${this.command.ppllm.T.promptPlaceholder}\n\n`;
 
 		//
 
@@ -44,7 +44,7 @@ export default class PromptGenerator {
 
 		//
 
-		output += `${this.ppllm.settings.emoji ? `${Emoji.General.FileStructure} ` : ''}${this.ppllm.T.fileStructure}\n\n`;
+		output += `${this.command.ppllm.cli.settings.o.emoji ? `${Emoji.General.FileStructure} ` : ''}${this.command.ppllm.T.fileStructure}\n\n`;
 		output += structure + '\n\n';
 
 		//
@@ -52,17 +52,17 @@ export default class PromptGenerator {
 		const innerPrompts = this.collectInnerPrompts(root); // Zbieramy inner prompty z wszystkich zagnieżdżonych katalogów
 
 		if (innerPrompts.length)
-			output += this.printInnerPrompts(root, innerPrompts) + "\n\n";
+			output += this.printInnerPrompts(innerPrompts) + "\n\n";
 
 		//
 
-		output += `${this.ppllm.settings.emoji ? `${Emoji.General.FileContents} ` : ''}${this.ppllm.T.fileContents}\n\n`;
+		output += `${this.command.ppllm.cli.settings.o.emoji ? `${Emoji.General.FileContents} ` : ''}${this.command.ppllm.T.fileContents}\n\n`;
 
 		const flatFiles = TreeNode.Flatten(root.files);
 		flatFiles.sort((a, b) => a.relativePath.localeCompare(b.relativePath));
 
 		for (const file of flatFiles) {
-			if (file.isBinary && this.ppllm.settings.binary !== 'all')
+			if (file.isBinary && this.command.ppllm.cli.settings.o.binary !== 'all')
 				continue; // Pomijamy binarne pliki z wyjątkiem trybu 'all'
 
 			//
@@ -73,12 +73,12 @@ export default class PromptGenerator {
 			try {
 				const stats = await fs.promises.stat(file.absolutePath);
 
-				if (this.ppllm.fileContentMaxSizeInBytes && stats.size > this.ppllm.fileContentMaxSizeInBytes) {
-					content = `[${this.ppllm.T.largeFile}]`;
+				if (this.command.ppllm.cli.settings.fileContentMaxSizeInBytes && stats.size > this.command.ppllm.cli.settings.fileContentMaxSizeInBytes) {
+					content = `[${this.command.ppllm.T.largeFile}]`;
 					placeholder = true;
 				}
 				else if (file.isBinary) {
-					content = `[${this.ppllm.T.binaryFile}]`;
+					content = `[${this.command.ppllm.T.binaryFile}]`;
 					placeholder = true;
 				}
 				else {
@@ -86,7 +86,7 @@ export default class PromptGenerator {
 				}
 			}
 			catch {
-				const readErrorMsg = this.ppllm.T.readError(file.absolutePath);
+				const readErrorMsg = this.command.ppllm.T.readError(file.absolutePath);
 				content = `[${readErrorMsg}]`;
 				placeholder = true;
 
@@ -94,7 +94,7 @@ export default class PromptGenerator {
 			}
 
 			const filePathWithRoot = path.join(root.fileName, file.relativePath);
-			output += `${this.ppllm.T.file}: ${this.ppllm.settings.emoji ? `${file.emoji} ` : ''}${filePathWithRoot}\n`;
+			output += `${this.command.ppllm.T.file}: ${this.command.ppllm.cli.settings.o.emoji ? `${file.emoji} ` : ''}${filePathWithRoot}\n`;
 
 			if (placeholder) {
 				output += content + '\n\n';
@@ -114,7 +114,7 @@ export default class PromptGenerator {
 	// Nowa funkcja wypisująca strukturę drzewa z root wypisanym osobno (bez łączników)
 	private printTree(root: TreeNodeDir): string {
 		// Wypisz root bez prefiksu (bez łączników)
-		let out = `${this.ppllm.settings.emoji ? `${root.emoji} ` : ''}${root.fileName}${!this.ppllm.settings.emoji ? '/' : ''}\n`;
+		let out = `${this.command.ppllm.cli.settings.o.emoji ? `${root.emoji} ` : ''}${root.fileName}${!this.command.ppllm.cli.settings.o.emoji ? '/' : ''}\n`;
 		out += this.printTreeRecursive(root.files, '');
 		return out;
 	}
@@ -136,7 +136,7 @@ export default class PromptGenerator {
 			const isLast = index === sorted.length - 1;
 			const connector = isLast ? '└─' : '├─';
 
-			const line = `${prefix}${connector} ${this.ppllm.settings.emoji ? `${node.emoji} ` : ''}${node.fileName}${node instanceof TreeNodeDir && !this.ppllm.settings.emoji ? '/' : ''}`;
+			const line = `${prefix}${connector} ${this.command.ppllm.cli.settings.o.emoji ? `${node.emoji} ` : ''}${node.fileName}${node instanceof TreeNodeDir && !this.command.ppllm.cli.settings.o.emoji ? '/' : ''}`;
 			lines.push(line);
 
 			if (node instanceof TreeNodeDir && node.files.length > 0) {
@@ -152,13 +152,13 @@ export default class PromptGenerator {
 
 	//
 
-	private printInnerPrompts(root: TreeNodeDir, innerPrompts: InnerPromptEntity[]) {
+	private printInnerPrompts(innerPrompts: InnerPromptEntity[]) {
 		return (
-			`${this.ppllm.settings.emoji ? `${Emoji.General.InnerPromptsHeader} ` : ''}${this.ppllm.T.innerPromptsHeader}\n\n` +
+			`${this.command.ppllm.cli.settings.o.emoji ? `${Emoji.General.InnerPromptsHeader} ` : ''}${this.command.ppllm.T.innerPromptsHeader}\n\n` +
 			innerPrompts
 				.map(ip => {
 					return (
-						`${this.ppllm.settings.emoji ? `${Emoji.Files.General.Folder} ` : ''}${ip.directory} - ${this.ppllm.T.innerPromptRules}:\n\n` +
+						`${this.command.ppllm.cli.settings.o.emoji ? `${Emoji.Files.General.Folder} ` : ''}${ip.directory} - ${this.command.ppllm.T.innerPromptRules}:\n\n` +
 						`${ip.prompt}`
 					);
 				})

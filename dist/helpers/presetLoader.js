@@ -1,8 +1,8 @@
 import path from 'path';
-import { promises as fs } from 'fs';
-import { fileURLToPath } from 'url';
+import fs from 'fs';
+import url from 'url';
 // Ustal ścieżkę do katalogu pliku tego modułu
-const __filename = fileURLToPath(import.meta.url);
+const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 //
 const PRESETS_DIR = path.resolve(`${__dirname}/../../assets/presets/ignore`);
@@ -34,12 +34,12 @@ export async function LoadPreset(presetName, rootDir) {
 //
 async function loadFile(name) {
     const fullPath = path.join(PRESETS_DIR, name);
-    const raw = await fs.readFile(fullPath, 'utf8');
+    const raw = await fs.promises.readFile(fullPath, 'utf8');
     return JSON.parse(raw);
 }
 //
 export async function ListAvailablePresets() {
-    const files = await fs.readdir(PRESETS_DIR);
+    const files = await fs.promises.readdir(PRESETS_DIR);
     return files
         .filter(f => f.endsWith('.ignore.json') && !f.startsWith('_'))
         .map(f => f.split('.')[0]); // np. node.ignore.json → node

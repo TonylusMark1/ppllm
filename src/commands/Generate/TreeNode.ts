@@ -1,6 +1,6 @@
-import * as Emoji from "./global/emoji.js";
+import * as Emoji from "../../global/emoji.js";
 
-import type {DirConfig} from "./index.js"
+import type DirConfig from "../../DirConfig.js"
 
 //
 

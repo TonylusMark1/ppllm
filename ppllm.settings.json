@@ -1,4 +1,5 @@
 {
   "preset": "node",
+  "maxSize": "10MB",
   "emoji": true
 }

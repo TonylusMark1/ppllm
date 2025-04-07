@@ -17,6 +17,7 @@
   ],
   "description": "Generate prompt of your project",
   "dependencies": {
+    "colorette": "^2.0.20",
     "commander": "^13.1.0",
     "file-type": "^20.4.1",
     "isbinaryfile": "^5.0.4",

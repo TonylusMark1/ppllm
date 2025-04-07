@@ -1,4 +1,4 @@
-import * as ExtEmojis from "./helpers/extEmojis.js";
+import * as Emoji from "./global/emoji.js";
 //
 export class TreeNode {
     static Flatten(nodes) {
@@ -30,19 +30,19 @@ export class TreeNode {
 }
 export class TreeNodeDir extends TreeNode {
     files = [];
-    config;
+    dirconfig;
     //
-    constructor(relativePath, absolutePath, fileName, config) {
+    constructor(relativePath, absolutePath, fileName, dirconfig) {
         super(relativePath, absolutePath, fileName);
         //
-        this.config = config;
+        this.dirconfig = dirconfig;
     }
     //
     get isEmptyDir() {
         return this.files?.length === 0;
     }
     get emoji() {
-        return this.isEmptyDir ? ExtEmojis.emptyFolder : ExtEmojis.folder;
+        return this.isEmptyDir ? Emoji.Files.General.EmptyFolder : Emoji.Files.General.Folder;
     }
 }
 export class TreeNodeFile extends TreeNode {
@@ -62,11 +62,11 @@ export class TreeNodeFile extends TreeNode {
     }
     get emoji() {
         let emoji = '';
-        if (this.ext && ExtEmojis.specific[this.ext]) {
-            emoji = ExtEmojis.specific[this.ext];
+        if (this.ext && Emoji.Files.PerExt[this.ext]) {
+            emoji = Emoji.Files.PerExt[this.ext];
         }
         else {
-            emoji = this.isBinary ? ExtEmojis.anyBinaryFile : ExtEmojis.anyNonBinaryFile;
+            emoji = this.isBinary ? Emoji.Files.General.AnyBinaryFile : Emoji.Files.General.AnyNonBinaryFile;
         }
         return emoji;
     }

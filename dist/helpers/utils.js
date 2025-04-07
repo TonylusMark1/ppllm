@@ -1,7 +1,5 @@
-import path from 'path';
 import { fileTypeFromFile } from 'file-type';
 import { isBinaryFile } from 'isbinaryfile';
-import { Minimatch } from 'minimatch';
 import slash from "slash";
 //
 export function ConvertPathToPOSIX(path) {
@@ -42,16 +40,4 @@ export async function IsFileBinary(filePath) {
         return true;
     }
     return await isBinaryFile(filePath);
-}
-//
-export function BuildIgnoreMatchers(rootDir, dir, ignorePatterns) {
-    return ignorePatterns.map(p => {
-        const patternAbsolute = path.resolve(dir, p);
-        const relativeToRoot = path.relative(rootDir, patternAbsolute);
-        const pattern = ConvertPathToPOSIX(relativeToRoot);
-        return new Minimatch(pattern, {
-            dot: true,
-            matchBase: false
-        });
-    });
 }

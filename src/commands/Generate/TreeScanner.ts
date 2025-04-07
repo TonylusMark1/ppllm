@@ -3,34 +3,34 @@ import { promises as fs } from 'fs';
 
 import { Minimatch } from 'minimatch';
 
-import * as Utils from './helpers/utils.js';
+import * as Utils from '../../helpers/utils.js';
 
-import type PPLLM from './index.js';
+import type CommandGenerate from './index.js';
 import { TreeNodeDir, TreeNodeFile } from './TreeNode.js';
 
 //
 
 export default class TreeScanner {
-    private readonly ppllm: PPLLM;
+    private readonly command: CommandGenerate;
 
     //
 
-    constructor(ppllm: PPLLM) {
-        this.ppllm = ppllm;
+    constructor(command: CommandGenerate) {
+        this.command = command;
     }
 
     //
 
     async scanDir(dir: string, matchers: Minimatch[]): Promise<TreeNodeDir> {
-        const dirconfig = this.ppllm.readDirConfigFile(path.join(dir, this.ppllm.cli.dirconfig));
+        const dirconfig = this.command.readDirConfigFile(path.join(dir, this.command.ppllm.cli.o.dirconfig));
 
         const newPatterns: string[] = dirconfig?.ignore ?? [];
-        const combinedMatchers = matchers.concat(this.ppllm.buildIgnoreMatchers(this.ppllm.absoluteSourceDirectory, dir, newPatterns));
+        const combinedMatchers = matchers.concat(this.command.buildIgnoreMatchers(this.command.absoluteSourceDirectory, dir, newPatterns));
 
         //
 
         const absPath = path.resolve(dir);
-        const relativePath = path.relative(this.ppllm.absoluteSourceDirectory, absPath) || '.';
+        const relativePath = path.relative(this.command.absoluteSourceDirectory, absPath) || '.';
 
         const node = new TreeNodeDir(relativePath, absPath, path.basename(dir), dirconfig);
 
@@ -44,10 +44,10 @@ export default class TreeScanner {
 
             //
 
-            if (item.name === this.ppllm.cli.dirconfig)
+            if (item.name === this.command.ppllm.cli.o.dirconfig)
                 continue;
 
-            if (this.ppllm.absoluteOutputPath && itemAbsPath === this.ppllm.absoluteOutputPath)
+            if (this.command.absoluteOutputPath && itemAbsPath === this.command.absoluteOutputPath)
                 continue;
 
             if (this.isIgnored(itemAbsPath, combinedMatchers))
@@ -62,11 +62,11 @@ export default class TreeScanner {
             else if (item.isFile()) {
                 const isBinary = await Utils.IsFileBinary(itemAbsPath);
 
-                if (this.ppllm.settings.binary === 'none' && isBinary)
+                if (this.command.ppllm.cli.settings.o.binary === 'none' && isBinary)
                     continue;
 
                 node.files.push(new TreeNodeFile(
-                    path.relative(this.ppllm.absoluteSourceDirectory, itemAbsPath),
+                    path.relative(this.command.absoluteSourceDirectory, itemAbsPath),
                     itemAbsPath,
                     item.name,
                     isBinary
@@ -80,7 +80,7 @@ export default class TreeScanner {
     //
 
     private isIgnored(itemPath: string, matchers: Minimatch[]): boolean {
-        const relativePath = path.relative(this.ppllm.absoluteSourceDirectory, itemPath);
+        const relativePath = path.relative(this.command.absoluteSourceDirectory, itemPath);
         const posix = Utils.ConvertPathToPOSIX(relativePath);
 
         return matchers.some(m => m.match(posix));
