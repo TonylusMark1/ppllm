@@ -1,0 +1,35 @@
+[Enter your prompt here]
+
+=== Project File Structure ===
+
+{{fileTree}}
+{{#if innerPrompts.length}}
+
+=== Inner Rules ===
+
+{{#each innerPrompts}}
+{{directory}} - rules inside this dir:
+
+{{prompt}}
+{{#unless @last}}
+
+{{/unless}}
+{{/each}}
+{{/if}}
+
+=== File Contents ===
+
+{{#each files}}
+File: {{path}}
+════════════════════════════════════════
+{{#if exception}}
+[{{{content}}}]
+{{else}}
+```
+{{{content}}}
+```
+{{/if}}
+{{#unless @last}}
+
+{{/unless}}
+{{/each}}

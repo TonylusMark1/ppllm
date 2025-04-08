@@ -2,11 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.1.0] - 2025-04-??
+## [1.3.0] - 2025-04-??
 
 ### Added
 
-- Change from simple string testing to using glob (minimatch) for ignore lists
+- Removed multi language support in favor of handlebars templating and easier code maintaining.
+- Support for other commands ('init', 'preset'). Now main usability is under 'generate' command or when no command provided
 
 ## [1.0.0] - 2025-04-02
 

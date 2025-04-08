@@ -1,40 +1,25 @@
 import { Command, Option } from 'commander';
 import * as colorette from 'colorette';
 
+import * as Types from "./types.js";
+import * as Validation from "./validation.js";
+import * as Help from "./help.js";
+
 //
 
-export type ValidationRule<T> =
-    | T
-    | RegExp
-    | { pattern: RegExp; description: string };
+type ValidationRule<T> = Types.ValidationRule<T>
+type OptionConfig<T> = Types.OptionConfig<T>
+type CommandArgument = Types.CommandArgument
+type RegisterOptionMeta = Types.RegisterOptionMeta
+type ScopedRegisterOptionCallback = Types.ScopedRegisterOptionCallback
 
-export interface OptionConfig<T> {
-    flags: string;
-    description: string;
-    defaultValue?: T;
-    validation?: ValidationRule<T>[];
-    onValidate?: (value: T) => void;
-    valueParser?: (value: string) => any;
-}
-
-export interface RegisterOptionMeta {
-    groupName?: string;
-    tags?: string[];
-}
-
-interface RegisteredOption<T> extends OptionConfig<T>, Required<RegisterOptionMeta> {
-    commanderOption: Option;
-}
-
-interface CommandGroup {
-    [groupName: string]: RegisteredOption<any>[];
-}
-
-interface CommandMeta {
-    commander: Command;
-    groups: CommandGroup;
-    userProvided: Set<string>;
-}
+export {
+    ValidationRule,
+    OptionConfig,
+    CommandArgument,
+    RegisterOptionMeta,
+    ScopedRegisterOptionCallback
+};
 
 //
 
@@ -45,36 +30,75 @@ export default class CommanderWrapper {
 
     private mainProgram = new Command();
 
-    private commands: Map<string, CommandMeta> = new Map();
-
-    private defaultCommand?: string;
+    private commands: Map<string, Types.CommandMeta> = new Map();
 
     private usedCommand: string = null as any;
 
     //
 
-    setDefaultCommand(commandName: string) {
-        if (!this.commands.has(commandName))
-            throw new Error(`Cannot set default command "${commandName}" because it is not registered yet.`);
-    
-        this.defaultCommand = commandName;
+    constructor() {
     }
 
     //
 
-    registerCommand(commandName: string, description: string, opts?: {strictMode?: boolean, isDefault?: boolean}) {
-        const command = this.getOrCreateCommand(commandName, opts?.isDefault ?? false);
+    registerCommand(
+        commandName: string,
+        description: string,
+        opts?: Types.RegisterCommandOptions,
+        setup?: (registerOption: Types.ScopedRegisterOptionCallback) => void
+    ) {
+        const command = this.obtainCommand(commandName, opts?.isDefault ?? false, opts?.arguments);
 
         command.commander
             .description(description)
-            .action(() => {
+            .action((...args: any[]) => {
                 this.usedCommand = commandName;
+
+                this.processCommandArguments(command, args);
             });
 
         command.commander.allowUnknownOption(!(opts?.strictMode ?? true));
+
+        if (setup) {
+            const scopedRegisterOption: Types.ScopedRegisterOptionCallback = <T>(meta: Types.RegisterOptionMeta, config: Types.OptionConfig<T>) => {
+                this.registerOption(commandName, meta, config);
+            };
+
+            setup(scopedRegisterOption);
+        }
     }
 
-    registerOption<T>(commandName: string, meta: RegisterOptionMeta, config: OptionConfig<T>) {
+    private processCommandArguments(command: Types.CommandMeta, args: any[]): void {
+        const parsedArgs: { config: Types.CommandArgument; value: any }[] = [];
+
+        for (let i = 0; i < command.arguments.length; i++) {
+            const argConfig = command.arguments[i].config;
+            const rawValue = args[i];
+
+            if (argConfig.required && rawValue === undefined)
+                throw new Error(colorette.red(`Missing required argument: ${colorette.yellow(argConfig.name)}`));
+
+            if (rawValue !== undefined) {
+                const parsedValue = argConfig.parser ? argConfig.parser(rawValue) : rawValue;
+
+                if (argConfig.validation && !Validation.IsValueValid(parsedValue, argConfig.validation)) {
+                    const allowed = this.formatAllowedValues(argConfig.validation);
+                    throw new Error(colorette.red(`Invalid value for argument "${colorette.yellow(argConfig.name)}".\n${colorette.green('Allowed')}: ${allowed}`));
+                }
+
+                parsedArgs.push({ config: argConfig, value: parsedValue });
+            }
+            else {
+                parsedArgs.push({ config: argConfig, value: undefined });
+            }
+        }
+
+        command.arguments = parsedArgs;
+    }
+
+    //
+
+    registerOption<T>(commandName: string, meta: Types.RegisterOptionMeta, config: Types.OptionConfig<T>) {
         const command = this.getCommand(commandName);
 
         //
@@ -95,22 +119,17 @@ export default class CommanderWrapper {
             if (commanderOption.isBoolean())
                 throw new Error(`Option "${config.flags}" is a boolean flag, but validation was provided.`);
 
-            for (const rule of config.validation) {
-                const isDirectValue = typeof rule === 'string' || typeof rule === 'number' || typeof rule === 'boolean';
-                const isRegExp = rule instanceof RegExp;
-                const isPatternObject =
-                    typeof rule === 'object' && rule !== null &&
-                    'pattern' in rule && rule.pattern instanceof RegExp &&
-                    'description' in rule && typeof rule.description === 'string';
+            //
 
-                if (!isDirectValue && !isRegExp && !isPatternObject)
-                    throw new Error(`Invalid validation rule for option "${config.flags}": ${JSON.stringify(rule)}.`);
-            }
+            const invalidRule = Validation.FindFirstInvalidRule(config.validation);
+
+            if (invalidRule)
+                throw new Error(`Invalid validation rule for option "${config.flags}" ${JSON.stringify(invalidRule)}.`);
         }
 
         //
 
-        const option: RegisteredOption<T> = {
+        const option: Types.RegisteredOption<T> = {
             ...config,
 
             commanderOption,
@@ -121,24 +140,17 @@ export default class CommanderWrapper {
 
         //
 
+        const parserCallback = this.createOptionArgParser(option, config, command);
+        commanderOption.argParser(parserCallback);
+
+        //
+
         if (commanderOption.isBoolean()) {
-            commanderOption.argParser((value: any) => {
-                command.userProvided.add(option.commanderOption.attributeName());
-                return true;
-            });
-        }
-        else {
-            commanderOption.argParser((value: any) => {
-                const parsedValue = config.valueParser ? config.valueParser(value) : value;
-
-                this.validateOptionValue(parsedValue, option, false);
-
-                if (option.onValidate)
-                    option.onValidate(parsedValue);
-
-                command.userProvided.add(option.commanderOption.attributeName());
-
-                return parsedValue;
+            this.getLongFlagNames(commanderOption).forEach(longFlag => {
+                command.commander.option(`--no-${longFlag}`, "", () => {
+                    command.userProvidedOptions.add(option.commanderOption.attributeName());
+                    return false;
+                });
             });
         }
 
@@ -161,23 +173,34 @@ export default class CommanderWrapper {
         //
 
         command.commander.addOption(commanderOption);
+    }
 
-        //
+    private createOptionArgParser<T>(option: Types.RegisteredOption<T>, config: Types.OptionConfig<T>, command: Types.CommandMeta): (value: any) => any {
+        if (option.commanderOption.isBoolean()) {
+            return (value: any) => {
+                command.userProvidedOptions.add(option.commanderOption.attributeName());
+                return true;
+            };
+        } else {
+            return (value: any) => {
+                command.userProvidedOptions.add(option.commanderOption.attributeName());
 
-        if (commanderOption.isBoolean()) {
-            this.getLongFlagNames(commanderOption).forEach(longFlag => {
-                command.commander.option(`--no-${longFlag}`, "", () => {
-                    command.userProvided.add(option.commanderOption.attributeName());
-                    return false;
-                });
-            });
+                const parsedValue = config.valueParser ? config.valueParser(value) : value;
+
+                this.validateOptionValue(parsedValue, option, false);
+
+                if (option.onValidate)
+                    option.onValidate(parsedValue);
+
+                return parsedValue;
+            };
         }
     }
 
     //
 
     parse(argv?: string[]) {
-        this.mainProgram.helpInformation = () => this.generateGlobalHelpText();
+        this.mainProgram.helpInformation = () => Help.generateGlobalHelpText(this.commands);
         this.mainProgram.parse(argv || process.argv);
     }
 
@@ -187,7 +210,7 @@ export default class CommanderWrapper {
         return this.usedCommand;
     }
 
-    getOptions<OptionsObjInterface extends Record<string, any> = Record<string, any>>(options?: { onlyUserProvided?: boolean; groupName?: string; tags?: string[] }) {
+    getOptions<OBJ extends Record<string, any> = Record<string, any>>(options?: { onlyUserProvided?: boolean; groupName?: string; tags?: string[] }) {
         const commandName = this.usedCommand;
 
         if (!commandName)
@@ -199,44 +222,70 @@ export default class CommanderWrapper {
         const opts = command.commander.opts();
         const result: any = {};
 
+        //
+
         const groups = options?.groupName
             ? { [options.groupName]: command.groups[options.groupName] ?? [] }
             : command.groups;
 
+        //
+
         for (const groupOptions of Object.values(groups)) {
             for (const option of groupOptions) {
                 const hasAllTags = options?.tags ? options.tags.every(tag => option.tags.includes(tag)) : true;
-                if (!hasAllTags) continue;
+
+                if (!hasAllTags)
+                    continue;
 
                 const optionName = option.commanderOption.attributeName();
-                if (!options?.onlyUserProvided || command.userProvided.has(optionName)) {
+
+                if (!options?.onlyUserProvided || command.userProvidedOptions.has(optionName))
                     result[optionName] = opts[optionName];
-                }
             }
         }
 
-        return result as OptionsObjInterface;
+        //
+
+        return result as OBJ;
+    }
+
+    getCommandArguments<OBJ extends Record<string, any> = Record<string, any>>(): OBJ {
+        const command = this.getCommand(this.usedCommand);
+
+        //
+
+        const result: any = {};
+
+        for (const arg of command.arguments)
+            result[arg.config.name] = arg.value;
+
+        //
+
+        return result as OBJ;
     }
 
     //
 
     hasUserSetOption(commandName: string, optionName: string) {
         const command = this.getCommand(commandName);
-        return command.userProvided.has(optionName);
+        return command.userProvidedOptions.has(optionName);
     }
 
-    isOptionValueValidForCurrentCommand<T>(optionName: string, value: T): boolean {
+    isOptionValueValid<T>(optionName: string, value: T): boolean | undefined;
+    isOptionValueValid<T>(optionName: string, value: T, ignoreAbsence: false): boolean;
+    isOptionValueValid<T>(optionName: string, value: T, ignoreAbsence: true): boolean | undefined;
+    isOptionValueValid<T>(optionName: string, value: T, ignoreAbsence: boolean = true): boolean | undefined {
         const command = this.getCommand(this.usedCommand);
-    
+
         for (const groupOptions of Object.values(command.groups)) {
             for (const option of groupOptions) {
-                if (option.commanderOption.attributeName() === optionName) {
-                    return this.isOptionValueValid(value, option);
-                }
+                if (option.commanderOption.attributeName() === optionName)
+                    return Validation.IsValueValid(value, option.validation);
             }
         }
-    
-        throw new Error(`Option "${optionName}" not found in command "${this.usedCommand}".`);
+
+        if ( !ignoreAbsence )
+            throw new Error(`Option "${optionName}" not found in command "${this.usedCommand}".`);
     }
 
     //
@@ -250,32 +299,54 @@ export default class CommanderWrapper {
         return command;
     }
 
-    private getOrCreateCommand(commandName: string, isDefault: boolean = false) {
-        if (!this.commands.has(commandName)) {
-            const commander = this.mainProgram.command(commandName, {isDefault});
+    private obtainCommand(commandName: string, isDefault: boolean = false, commandArgs: Types.CommandArgument[] = []) {
+        let meta: Types.CommandMeta | undefined = this.commands.get(commandName)
 
-            const meta: CommandMeta = {
-                commander,
-                groups: {},
-                userProvided: new Set(),
-            };
+        if (meta)
+            return meta;
 
-            // Dodajemy osobny help dla każdej komendy
-            commander.helpInformation = () => this.generateHelpTextForCommand(commandName);
+        //
 
-            this.commands.set(commandName, meta);
-        }
+        const argString = commandArgs
+            .map(arg => arg.required ? `<${arg.name}>` : `[${arg.name}]`)
+            .join(' ');
 
-        return this.commands.get(commandName)!;
+        //
+
+        const cmd_nameAndArgs = argString ? `${commandName} ${argString}` : commandName;
+        const cmd_opts = { isDefault };
+
+        const commander = this.mainProgram.command(cmd_nameAndArgs, cmd_opts);
+
+        meta = {
+            commander,
+            groups: {},
+            userProvidedOptions: new Set(),
+            arguments: commandArgs.map(arg => ({ config: arg, value: undefined })),
+        };
+
+        //
+
+        commander.helpInformation = () => Help.generateHelpTextForCommand(commandName, this.getCommand(commandName));
+
+        //
+
+        this.commands.set(commandName, meta);
+
+        //
+
+        return meta;
     }
+
+    //
 
     private getLongFlagNames(option: Option) {
         const matches = Array.from(option.flags.matchAll(/--([a-zA-Z0-9-]+)/g));
         return matches.map(match => match[1]);
     }
 
-    private validateOptionValue<T>(value: T, option: RegisteredOption<T>, isDefault: boolean) {
-        const isValid = this.isOptionValueValid(value, option);
+    private validateOptionValue<T>(value: T, option: Types.RegisteredOption<T>, isDefault: boolean) {
+        const isValid = Validation.IsValueValid(value, option.validation);
 
         if (!isValid) {
             const source = isDefault ? 'Default value' : 'Invalid value';
@@ -285,31 +356,19 @@ export default class CommanderWrapper {
         }
     }
 
-    private isOptionValueValid<T>(value: T, option: RegisteredOption<T>): boolean {
-        if (!option.validation || option.validation.length === 0)
-            return true;
-    
-        const isValid = option.validation.some(rule => {
-            if (rule instanceof RegExp)
-                return rule.test(String(value));
-    
-            if (typeof rule === 'object' && rule !== null && 'pattern' in rule)
-                return rule.pattern.test(String(value));
-    
-            return rule === value;
-        });
-    
-        return isValid;
-    }    
+    //
 
-    private enhanceDescription<T>(option: RegisteredOption<T>) {
+    private enhanceDescription<T>(option: Types.RegisteredOption<T>) {
         const parts: string[] = [];
+
+        //
 
         parts.push(option.description);
 
-        if (option.defaultValue !== undefined) {
+        //
+
+        if (option.defaultValue !== undefined)
             parts.push(`(${colorette.green('Default')}: ${colorette.yellow(JSON.stringify(option.defaultValue))})`);
-        }
 
         if (option.commanderOption.isBoolean()) {
             const longFlagNames = this.getLongFlagNames(option.commanderOption);
@@ -325,10 +384,14 @@ export default class CommanderWrapper {
             parts.push(`(${colorette.green('Allowed')}: ${colorette.yellow(allowed)})`);
         }
 
+        //
+
         option.description = parts.filter(Boolean).join(' ');
     }
 
-    private formatAllowedValues<T>(validation: ValidationRule<T>[]) {
+    //
+
+    private formatAllowedValues<T>(validation: Types.ValidationRule<T>[]) {
         return validation
             .map(rule => {
                 if (rule instanceof RegExp)
@@ -341,87 +404,5 @@ export default class CommanderWrapper {
             })
             .filter(Boolean)
             .join(', ');
-    }
-
-    //
-
-    private generateGlobalHelpText(): string {
-        const lines: string[] = [];
-
-        //
-
-        lines.push(colorette.bold(`\nAvailable Commands:\n`));
-
-        for (const [commandName, commandMeta] of this.commands.entries()) {
-            const description = commandMeta.commander.description() || '';
-
-            lines.push(`  ${colorette.cyan(commandName)}`);
-
-            if (description.trim() !== '')
-                lines.push(`    ${description}`);
-
-            lines.push('');
-        }
-
-        lines.push(`${colorette.green('Tip')}: For detailed options, use ${colorette.cyan('<command> --help')}\n`);
-
-        //
-
-        return lines.join('\n');
-    }
-
-    private generateHelpTextForCommand(commandName: string): string {
-        const commandMeta = this.getCommand(commandName);
-
-        //
-
-        const lines: string[] = [];
-
-        //
-
-        lines.push(colorette.bold(`\nOptions for command: ${colorette.cyan(commandName)}\n`));
-
-        //
-
-        const groups = Object.entries(commandMeta.groups);
-
-        if (groups.length === 0) {
-            lines.push(colorette.yellow('No options available for this command.\n'));
-            return lines.join('\n');
-        }
-
-        //
-
-        groups.unshift(["built-in", [{
-            groupName: "built-in",
-
-            flags: "-h, --help",
-            description: "Show help",
-            tags: [],
-
-            commanderOption: null as any
-        }]]);
-
-        //
-
-        const allOptions = groups.flatMap(([, options]) => options);
-        const flagPadding = Math.max(...allOptions.map(opt => opt.flags.length)) + 2;
-
-        for (const [groupName, options] of groups) {
-            lines.push(colorette.underline(`${groupName}:`) + "\n");
-
-            for (const option of options) {
-                const flags = colorette.cyan(option.flags.padEnd(flagPadding));
-                lines.push(`  ${flags} ${option.description}`);
-            }
-
-            lines.push('');
-        }
-
-        lines.push('');
-
-        //
-
-        return lines.join('\n');
     }
 }
