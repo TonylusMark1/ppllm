@@ -1,15 +1,14 @@
 import fs from 'fs';
 import path from 'path';
 
-import Handlebars from 'handlebars';
+import * as Emoji from '@/src/global/emoji.js';
 
-import * as Consts from '../../global/consts.js';
-import * as Emoji from '../../global/emoji.js';
+import * as Utils from '@/src/helpers/utils.js';
 
-import * as Utils from '../../helpers/utils.js';
+import Templates from './Templates.js';
+import { TreeNode, TreeNodeDir } from './TreeNode.js';
 
 import type CommandGenerate from './index.js';
-import { TreeNode, TreeNodeDir } from './TreeNode.js';
 
 //
 
@@ -38,38 +37,20 @@ interface TemplateFile {
 
 export default class PromptGenerator {
 	private readonly parent: CommandGenerate;
-	private readonly template: Handlebars.TemplateDelegate;
 
 	//
 
 	constructor(parent: CommandGenerate) {
 		this.parent = parent;
-
-		//
-
-		this.template = this.loadTemplate();
-	}
-
-	//
-
-	private loadTemplate() {
-		const templatePath = (() => {
-			if (this.parent.settings.template === 'default')
-				return Consts.DEFAULT_GENERATE_TEMPLATE_PATH;
-
-			return path.resolve(process.cwd(), this.parent.settings.template);
-		})();
-
-		//
-
-		const content = fs.readFileSync(templatePath, 'utf-8');
-
-		return Handlebars.compile(content);
 	}
 
 	//
 
 	async generate(root: TreeNodeDir): Promise<string> {
+		const template = Templates.Load(this.parent.settings.template);
+
+		//
+
 		const fileTree = this.parent.treePrinter.print(root);
 		const innerPrompts = this.collectInnerPrompts(root);
 		const files = await this.collectFiles(root);
@@ -101,7 +82,7 @@ export default class PromptGenerator {
 
 		//
 
-		return this.template(data);
+		return template(data);
 	}
 
 	//

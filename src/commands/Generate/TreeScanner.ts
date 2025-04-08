@@ -3,7 +3,7 @@ import { promises as fs } from 'fs';
 
 import { Minimatch } from 'minimatch';
 
-import * as Utils from '../../helpers/utils.js';
+import * as Utils from '@/src/helpers/utils.js';
 
 import type CommandGenerate from './index.js';
 import { TreeNodeDir, TreeNodeFile } from './TreeNode.js';

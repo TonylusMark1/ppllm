@@ -1,0 +1,35 @@
+[Wpisz tutaj swój prompt]
+
+=== Struktura plików projektu ===
+
+{{fileTree}}
+{{#if innerPrompts.length}}
+
+=== Wewnętrzne zasady ===
+
+{{#each innerPrompts}}
+{{directory}} - zasady w tym katalogu:
+
+{{prompt}}
+{{#unless @last}}
+
+{{/unless}}
+{{/each}}
+{{/if}}
+
+=== Zawartość plików ===
+
+{{#each files}}
+Plik: {{path}}
+════════════════════════════════════════
+{{#if exception}}
+[{{{content}}}]
+{{else}}
+```
+{{{content}}}
+```
+{{/if}}
+{{#unless @last}}
+
+{{/unless}}
+{{/each}}

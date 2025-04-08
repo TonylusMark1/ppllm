@@ -1,26 +1,30 @@
 import path from 'path';
 import fs from 'fs';
-import url from 'url';
 
-//
-
-const __filename = url.fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import * as Utils from '@/src/helpers/utils.js';
 
 //
 
 export default class PresetLoader {
-    private static readonly PRESETS_DIR = path.resolve(`${__dirname}/../assets/presets/ignore`);
+    private static readonly DIRECTORY = path.resolve(Utils.getProjectRoot(), `./assets/presets/ignore`);
+    
     private static readonly GENERAL_PRESET_NAME = '_general';
+    private static readonly SUFFIX = '.ignore.json';
 
     //
 
-    list(): string[] {
-        const files = fs.readdirSync(PresetLoader.PRESETS_DIR);
+    readonly list: string[];
 
-        return files
-            .filter(f => f.endsWith('.ignore.json') && !f.startsWith('_'))
-            .map(f => f.split('.')[0]); // np. node.ignore.json → node
+    //
+
+    constructor() {
+        this.list = (() => {
+            const files = fs.readdirSync(PresetLoader.DIRECTORY);
+
+            return files
+                .filter(f => f.endsWith(PresetLoader.SUFFIX) && !f.startsWith(PresetLoader.GENERAL_PRESET_NAME))
+                .map(f => f.split('.')[0]); // np. node.ignore.json → node
+        })();
     }
 
     //
@@ -59,35 +63,16 @@ export default class PresetLoader {
     //
 
     async loadPresetFile(name: string) {
-        const filename = `${name}.ignore.json`;
-
-        //
-
-        if ( !await this.doesFileExist(filename) )
+        if ( !this.list.includes(name) && name != PresetLoader.GENERAL_PRESET_NAME )
             throw new Error(`Built-in preset '${name}' doesn't exist.`);
 
         //
 
-        return this.loadFile(filename);
-    }
-
-    //
-
-    private async doesFileExist(filename: string) {
-        try {
-            const fullPath = path.join(PresetLoader.PRESETS_DIR, filename);
-            await fs.promises.access(fullPath);
-            return true;
-        }
-        catch {
-            return false;
-        }
-    }
-
-    private async loadFile(filename: string): Promise<string[]> {
-        const fullPath = path.join(PresetLoader.PRESETS_DIR, filename);
+        const fullPath = path.join(PresetLoader.DIRECTORY, `${name}.ignore.json`);
         const raw = await fs.promises.readFile(fullPath, 'utf8');
 
-        return JSON.parse(raw);
+        //
+
+        return JSON.parse(raw) as string[];
     }
 }

@@ -1,9 +1,9 @@
 import path from 'path';
 import fs from 'fs';
-import { ScopedRegisterOptionCallback } from './CommanderWrapper/index.js';
+import { ScopedRegisterOptionCallback } from '@/src/CommanderWrapper/index.js';
 
-import * as Consts from './global/consts.js';
-import * as Emoji from './global/emoji.js';
+import * as Consts from '@/src/global/consts.js';
+import * as Emoji from '@/src/global/emoji.js';
 
 import type PPLLM from './index.js';
 
@@ -21,7 +21,7 @@ export default class SettingsHandler {
 		option(
 			{ groupName: "settings" },
 			{
-				flags: '-c, --dirconfig <dirconfig>',
+				flags: '-c, --dirconfig <filename>',
 				description: 'Name of the dirconfig file.',
 				defaultValue: Consts.DEFAULT_DIRCONFIG_FILENAME,
 

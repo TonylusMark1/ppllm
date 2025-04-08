@@ -5,10 +5,17 @@
 .DS_Store
 Thumbs.db
 
+# Configs
+tsup.config.ts
+
 # Output file
+ppllm.settings.json
+ppllm.dirconfig.json
 ppllm.prompt.txt
 
 # Exclude files and folder to leave only essential files
+.git
+.vscode
 public
 src
 CHANGELOG.md

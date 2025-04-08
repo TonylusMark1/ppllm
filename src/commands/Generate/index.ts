@@ -3,22 +3,25 @@ import fs from 'fs';
 import process from 'process';
 
 import { Minimatch } from 'minimatch';
-import { ScopedRegisterOptionCallback } from '../../CommanderWrapper/index.js';
+import { ScopedRegisterOptionCallback } from '@/src/CommanderWrapper/index.js';
 
-import * as Consts from '../../global/consts.js';
-import * as Emoji from '../../global/emoji.js';
+import * as Consts from '@/src/global/consts.js';
+import * as Emoji from '@/src/global/emoji.js';
 
-import * as Utils from '../../helpers/utils.js';
+import * as Utils from '@/src/helpers/utils.js';
 
-import type PPLLM from '../../index.js';
-import type { Options as PPLLM_Options } from '../../index.js';
-import type { SettingsOptions as PPLLM_SettingsOptions } from '../../SettingsHandler.js';
+import type PPLLM from '@/src/index.js';
+import type { Options as PPLLM_Options } from '@/src/index.js';
+import type { SettingsOptions as PPLLM_SettingsOptions } from '@/src/SettingsHandler.js';
 
 import CommandGeneric from "../Generic.js";
 
+import Templates from './Templates.js';
+
+import PromptGenerator from './PromptGenerator.js';
+
 import TreePrinter from './TreePrinter.js';
 import TreeScanner from './TreeScanner.js';
-import PromptGenerator from './PromptGenerator.js';
 
 //
 
@@ -74,11 +77,11 @@ export default class CommandGenerate extends CommandGeneric<Options> {
         option(
             { groupName: "settings" },
             {
-                flags: '-t, --template <filename>',
+                flags: '-t, --template <template>',
                 description: `Filename for output file.`,
-                defaultValue: "default",
+                defaultValue: Templates.Default,
 
-                validation: ["default", { pattern: /^.+$/i, description: "filename string" }],
+                validation: [...Templates.List, { pattern: /^.+$/i, description: "filename string" }],
             }
         );
         option(
@@ -98,7 +101,7 @@ export default class CommandGenerate extends CommandGeneric<Options> {
                 description: 'Preset of ignore list to use',
                 defaultValue: "disable",
 
-                validation: ["disable", "general", ...ppllm.presetLoader.list()],
+                validation: ["disable", "general", ...ppllm.presetLoader.list],
                 valueParser: (x: string) => x.toLowerCase(),
             }
         );

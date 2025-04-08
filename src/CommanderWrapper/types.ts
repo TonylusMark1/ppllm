@@ -3,7 +3,7 @@ import { Command, Option } from 'commander';
 //
 
 export type ValidationRule<T> =
-    | T
+    | (T extends any[] ? never : T)
     | RegExp
     | { pattern: RegExp; description: string };
 

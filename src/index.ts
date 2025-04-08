@@ -2,7 +2,7 @@
 
 import CommanderWrapper, { ScopedRegisterOptionCallback } from './CommanderWrapper/index.js';
 
-import * as Consts from './global/consts.js';
+import * as Consts from '@/src/global/consts.js';
 
 import CommandGeneric from "./commands/Generic.js";
 import CommandGenerate from "./commands/Generate/index.js";

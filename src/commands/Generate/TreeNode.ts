@@ -1,6 +1,6 @@
 import * as Emoji from "../../global/emoji.js";
 
-import { DirConfig } from "../../DirConfigHandler.js"
+import { DirConfig } from "@/src/DirConfigHandler.js"
 
 //
 

@@ -1,8 +1,8 @@
-import { CommandArgument } from '../../CommanderWrapper/index.js';
+import { CommandArgument } from '@/src/CommanderWrapper/index.js';
 
-import * as Emoji from '../../global/emoji.js';
+import * as Emoji from '@/src/global/emoji.js';
 
-import type PPLLM from '../../index.js';
+import type PPLLM from '@/src/index.js';
 
 import CommandGeneric from "../Generic.js";
 

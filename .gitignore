@@ -1,10 +1,13 @@
-# Node modules
+# Directories
 node_modules/
 dist/
 
 # System-generated files
 .DS_Store
 Thumbs.db
+
+# Configs
+tsup.config.ts
 
 # Output file
 ppllm.prompt.txt

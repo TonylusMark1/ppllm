@@ -1,5 +1,6 @@
 {
   "emoji": true,
+  "template": "pl",
   "preset": "node",
   "maxSize": "10MB"
 }

@@ -1,9 +1,13 @@
-- Przemysleć czy chcemy multilingual w konsoli, może wystarczy tylko w prompcie. Może wywalić lang w ogóle, zostawić ang i zrobić prompt template i prompt file template
 - Zsynchronizować console.warn/log w presetLoader z tym jak to robimy gdzie indziej i obsluga emoji na podstawie settings
 - Tryb interaktywny
 - Jakiś fajny prosty logger
 - Muszę zrobić lepszy readme, pokazujący wszystkie możliwości
 - Zamnienić język komentarzy w kodzie
 - Zrobić importy w stylu @src/... @consts itp.
+- Uzupełnij/wymienić regexy na lepsze w walidacjach
 
 - nie działa ppllm globalnie w C:\Users\SomeUser, dlaczego?
+
+pierdoły:
+
+- przy zapisywaniu user settings jeśli jakaś wartość jest zgodna z domyślną, to po co ją umieszczać w pliku?

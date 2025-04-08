@@ -27,11 +27,11 @@
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
+    "tsup": "^8.4.0",
     "typescript": "^5.8.2"
   },
   "scripts": {
-    "build": "tsc",
-    "prepare": "npm run build",
-    "gitpush": "sh -c 'git add . && git commit -m \"$1\" && git push' --"
+    "build": "tsup",
+    "prepare": "npm run build"
   }
 }

@@ -1,6 +1,6 @@
 import {ScopedRegisterOptionCallback, CommandArgument} from '../CommanderWrapper/index.js';
 
-import type PPLLM from '../index.js';
+import type PPLLM from '@/src/index.js';
 
 //
 
