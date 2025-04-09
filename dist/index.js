@@ -10,9 +10,33 @@ var DEFAULT_DIRCONFIG_FILENAME = "ppllm.dirconfig.json";
 var DEFAULT_SETTINGS_FILENAME = "ppllm.settings.json";
 var DEFAULT_OUTPUT_FILENAME = "ppllm.prompt.txt";
 
+// src/Logger.ts
+var Logger = class {
+  ppllm;
+  //
+  constructor(ppllm2) {
+    this.ppllm = ppllm2;
+  }
+  //
+  log(emoji, ...args) {
+    emoji = this.ppllm.settingsHandler.settings.emoji ? emoji : void 0;
+    if (emoji)
+      console.log(emoji, ...args);
+    else
+      console.log(...args);
+  }
+  error(emoji, ...args) {
+    emoji = this.ppllm.settingsHandler.settings.emoji ? emoji : void 0;
+    if (emoji)
+      console.error(emoji, ...args);
+    else
+      console.error(...args);
+  }
+};
+
 // src/commands/Generate/index.ts
-import path5 from "path";
-import fs4 from "fs";
+import path6 from "path";
+import fs5 from "fs";
 import process2 from "process";
 import { Minimatch } from "minimatch";
 
@@ -64,8 +88,8 @@ function getProjectRoot() {
   const currentDirectory = path.dirname(url.fileURLToPath(import.meta.url));
   return path.resolve(currentDirectory, "../../");
 }
-function ConvertPathToPOSIX(path9) {
-  return slash(path9);
+function ConvertPathToPOSIX(path10) {
+  return slash(path10);
 }
 function ConvertSizeToBytes(input) {
   const match = /^(\d+) *(B|KB|MB|GB)?$/i.exec(input);
@@ -102,6 +126,38 @@ async function IsFileBinary(filePath) {
   return await isBinaryFile(filePath);
 }
 
+// src/PresetLoader.ts
+import path2 from "path";
+import fs from "fs";
+var PresetLoader = class _PresetLoader {
+  static DIRECTORY = path2.resolve(getProjectRoot(), `./assets/presets/ignore`);
+  static GENERAL_PRESET_NAME = "general";
+  static SUFFIX = ".ignore.json";
+  static List = (() => {
+    const files = fs.readdirSync(_PresetLoader.DIRECTORY);
+    return files.filter((f) => f.endsWith(_PresetLoader.SUFFIX)).map((f) => f.split(".")[0]);
+  })();
+  //
+  async loadPreset(presetName) {
+    const all = [];
+    all.push(
+      ...await this.loadPresetFile(_PresetLoader.GENERAL_PRESET_NAME)
+    );
+    presetName !== "general" && all.push(
+      ...await this.loadPresetFile(presetName)
+    );
+    return all;
+  }
+  //
+  async loadPresetFile(name) {
+    if (!_PresetLoader.List.includes(name))
+      throw new Error(`Built-in preset '${name}' doesn't exist.`);
+    const fullPath = path2.join(_PresetLoader.DIRECTORY, `${name}.ignore.json`);
+    const raw = await fs.promises.readFile(fullPath, "utf8");
+    return JSON.parse(raw);
+  }
+};
+
 // src/commands/Generic.ts
 var CommandGeneric = class {
   static get Name() {
@@ -129,18 +185,18 @@ var CommandGeneric = class {
   }
 };
 
-// src/commands/Generate/Templates.ts
-import path2 from "path";
-import fs from "fs";
+// src/Templates.ts
+import path3 from "path";
+import fs2 from "fs";
 import Handlebars from "handlebars";
 var Templates = class {
-  static DIRECTORY = path2.resolve(getProjectRoot(), `./assets/templates`);
+  static DIRECTORY = path3.resolve(getProjectRoot(), `./assets/templates`);
   static SUFFIX = ".prompt.hbs";
   static List;
   static Default = "eng";
   static {
     this.List = (() => {
-      const files = fs.readdirSync(this.DIRECTORY);
+      const files = fs2.readdirSync(this.DIRECTORY);
       return files.filter((f) => f.endsWith(this.SUFFIX)).map((f) => f.split(".")[0]);
     })();
     if (!this.Exists(this.Default))
@@ -150,17 +206,16 @@ var Templates = class {
   static Exists(name) {
     return this.List.includes(name);
   }
-  //
-  static Load(template) {
+  static Load(template, compile) {
     const existsInBuiltIn = this.Exists(template);
     const templatePath = (() => {
       if (existsInBuiltIn)
-        return path2.resolve(this.DIRECTORY, `${template}${this.SUFFIX}`);
-      return path2.resolve(process.cwd(), template);
+        return path3.resolve(this.DIRECTORY, `${template}${this.SUFFIX}`);
+      return path3.resolve(process.cwd(), template);
     })();
     try {
-      const content = fs.readFileSync(templatePath, "utf-8");
-      return Handlebars.compile(content);
+      const content = fs2.readFileSync(templatePath, "utf-8");
+      return compile ? Handlebars.compile(content) : content;
     } catch (err) {
       if (existsInBuiltIn)
         throw err;
@@ -172,8 +227,8 @@ var Templates = class {
 };
 
 // src/commands/Generate/PromptGenerator.ts
-import fs2 from "fs";
-import path3 from "path";
+import fs3 from "fs";
+import path4 from "path";
 
 // src/commands/Generate/TreeNode.ts
 var TreeNode = class {
@@ -253,7 +308,7 @@ var PromptGenerator = class {
   }
   //
   async generate(root) {
-    const template = Templates.Load(this.parent.settings.template);
+    const template = Templates.Load(this.parent.settings.template, true);
     const fileTree = this.parent.treePrinter.print(root);
     const innerPrompts = this.collectInnerPrompts(root);
     const files = await this.collectFiles(root);
@@ -263,7 +318,7 @@ var PromptGenerator = class {
         innerPrompt.directory = `${emoji} ${innerPrompt.directory}`;
       }
       for (const file of files) {
-        const ext = path3.extname(file.path);
+        const ext = path4.extname(file.path);
         const emoji = Files.PerExt[ext] ?? (file.isBinary ? Files.General.AnyNonBinaryFile : Files.General.AnyBinaryFile);
         file.path = `${emoji} ${file.path}`;
       }
@@ -281,7 +336,7 @@ var PromptGenerator = class {
     for (const child of node.files) {
       if (child instanceof TreeNodeDir) {
         if (child.dirconfig?.prompt) {
-          const filePathWithRoot = path3.join(root.fileName, child.relativePath);
+          const filePathWithRoot = path4.join(root.fileName, child.relativePath);
           results.push({
             directory: filePathWithRoot,
             directoryIsEmpty: child.isEmptyDir,
@@ -306,13 +361,13 @@ var PromptGenerator = class {
       if (file.isBinary && this.parent.settings.binary !== "all")
         continue;
       const templateFile = {
-        path: path3.join(root.fileName, file.relativePath),
+        path: path4.join(root.fileName, file.relativePath),
         isBinary: file.isBinary,
         exception: false,
         content: ""
       };
       try {
-        const stats = await fs2.promises.stat(file.absolutePath);
+        const stats = await fs3.promises.stat(file.absolutePath);
         if (file.isBinary) {
           templateFile.content = `File is binary and was not loaded`;
           templateFile.exception = true;
@@ -320,12 +375,12 @@ var PromptGenerator = class {
           templateFile.content = `File is too large and was not loaded`;
           templateFile.exception = true;
         } else {
-          templateFile.content = await fs2.promises.readFile(file.absolutePath, "utf8");
+          templateFile.content = await fs3.promises.readFile(file.absolutePath, "utf8");
         }
       } catch (err) {
         templateFile.content = `File read error: ${err}`;
         templateFile.exception = true;
-        console.log(templateFile.content);
+        this.parent.ppllm.logger.error(General.Error, templateFile.content);
       }
       files.push(templateFile);
     }
@@ -374,8 +429,8 @@ var TreePrinter = class {
 };
 
 // src/commands/Generate/TreeScanner.ts
-import path4 from "path";
-import { promises as fs3 } from "fs";
+import path5 from "path";
+import { promises as fs4 } from "fs";
 var TreeScanner = class {
   parent;
   //
@@ -384,17 +439,17 @@ var TreeScanner = class {
   }
   //
   async scanDir(dir, matchers) {
-    const dirConfigPath = path4.join(dir, this.parent.ppllm.settingsHandler.settings.dirconfig);
+    const dirConfigPath = path5.join(dir, this.parent.ppllm.settingsHandler.settings.dirconfig);
     const dirconfig = this.parent.ppllm.dirConfigHandler.read(dirConfigPath);
     const newPatterns = dirconfig?.ignore ?? [];
     const combinedMatchers = matchers.concat(this.parent.buildIgnoreMatchers(this.parent.absoluteSourceDirectory, dir, newPatterns));
-    const absPath = path4.resolve(dir);
-    const relativePath = path4.relative(this.parent.absoluteSourceDirectory, absPath) || ".";
-    const node = new TreeNodeDir(relativePath, absPath, path4.basename(dir), dirconfig);
-    const items = await fs3.readdir(dir, { withFileTypes: true });
+    const absPath = path5.resolve(dir);
+    const relativePath = path5.relative(this.parent.absoluteSourceDirectory, absPath) || ".";
+    const node = new TreeNodeDir(relativePath, absPath, path5.basename(dir), dirconfig);
+    const items = await fs4.readdir(dir, { withFileTypes: true });
     for (const item of items) {
-      const itemPath = path4.join(dir, item.name);
-      const itemAbsPath = path4.resolve(itemPath);
+      const itemPath = path5.join(dir, item.name);
+      const itemAbsPath = path5.resolve(itemPath);
       if (item.name === this.parent.o.dirconfig || item.name == this.parent.o.settings)
         continue;
       if (this.parent.absoluteOutputPath && itemAbsPath === this.parent.absoluteOutputPath)
@@ -409,7 +464,7 @@ var TreeScanner = class {
         if (this.parent.settings.binary === "none" && isBinary)
           continue;
         node.files.push(new TreeNodeFile(
-          path4.relative(this.parent.absoluteSourceDirectory, itemAbsPath),
+          path5.relative(this.parent.absoluteSourceDirectory, itemAbsPath),
           itemAbsPath,
           item.name,
           isBinary
@@ -420,7 +475,7 @@ var TreeScanner = class {
   }
   //
   isIgnored(itemPath, matchers) {
-    const relativePath = path4.relative(this.parent.absoluteSourceDirectory, itemPath);
+    const relativePath = path5.relative(this.parent.absoluteSourceDirectory, itemPath);
     const posix = ConvertPathToPOSIX(relativePath);
     return matchers.some((m) => m.match(posix));
   }
@@ -432,7 +487,7 @@ var CommandGenerate = class extends CommandGeneric {
     return "generate";
   }
   static get Description() {
-    return "Generate prompt";
+    return "Generates prompt.";
   }
   static Options(option, ppllm2) {
     option(
@@ -478,7 +533,7 @@ var CommandGenerate = class extends CommandGeneric {
         flags: "-p, --preset <preset>",
         description: "Preset of ignore list to use",
         defaultValue: "disable",
-        validation: ["disable", "general", ...ppllm2.presetLoader.list],
+        validation: ["disable", ...PresetLoader.List],
         valueParser: (x) => x.toLowerCase()
       }
     );
@@ -512,8 +567,8 @@ var CommandGenerate = class extends CommandGeneric {
   //
   constructor(ppllm2) {
     super(ppllm2);
-    this.absoluteSourceDirectory = path5.resolve(process2.cwd(), this.o.dir);
-    this.absoluteOutputPath = path5.resolve(process2.cwd(), this.settings.file);
+    this.absoluteSourceDirectory = path6.resolve(process2.cwd(), this.o.dir);
+    this.absoluteOutputPath = path6.resolve(process2.cwd(), this.settings.file);
   }
   //
   get settings() {
@@ -527,20 +582,20 @@ var CommandGenerate = class extends CommandGeneric {
       const prompt = await this.promptGenerator.generate(dirNode);
       this.outputResult(prompt);
     } catch (err) {
-      console.error(`${this.ppllm.settingsHandler.settings.emoji ? `${General.Error} ` : ""} Error:`, err);
+      this.ppllm.logger.error(General.Error, `Error:`, err);
     }
   }
   //
   async getIgnorePresetMatchers() {
     if (this.settings.preset == "disable")
       return [];
-    const presetPatterns = (await this.ppllm.presetLoader.loadPreset(this.settings.preset)).map((p) => path5.resolve(this.absoluteSourceDirectory, p));
+    const presetPatterns = (await this.ppllm.presetLoader.loadPreset(this.settings.preset)).map((p) => path6.resolve(this.absoluteSourceDirectory, p));
     return this.buildIgnoreMatchers(this.absoluteSourceDirectory, this.absoluteSourceDirectory, presetPatterns);
   }
   buildIgnoreMatchers(rootDir, dir, ignorePatterns) {
     return ignorePatterns.map((p) => {
-      const patternAbsolute = path5.resolve(dir, p);
-      const relativeToRoot = path5.relative(rootDir, patternAbsolute);
+      const patternAbsolute = path6.resolve(dir, p);
+      const relativeToRoot = path6.relative(rootDir, patternAbsolute);
       const pattern = ConvertPathToPOSIX(relativeToRoot);
       return new Minimatch(pattern, {
         dot: true,
@@ -553,10 +608,10 @@ var CommandGenerate = class extends CommandGeneric {
     if (this.o.output == "stdout") {
       process2.stdout.write(prompt, "utf8");
     } else {
-      fs4.writeFileSync(this.absoluteOutputPath, prompt, "utf8");
-      const relPath = path5.relative(process2.cwd(), this.absoluteOutputPath);
+      fs5.writeFileSync(this.absoluteOutputPath, prompt, "utf8");
+      const relPath = path6.relative(process2.cwd(), this.absoluteOutputPath);
       const displayPath = relPath.startsWith("..") ? this.absoluteOutputPath : `./${relPath}`;
-      console.log(`${this.ppllm.settingsHandler.settings.emoji ? `${General.Saved} ` : ""}Prompt generated and saved to file: ${displayPath}`);
+      this.ppllm.logger.log(General.Saved, `Prompt generated and saved to file: ${displayPath}`);
     }
   }
 };
@@ -567,14 +622,14 @@ var CommandPreset = class extends CommandGeneric {
     return "preset";
   }
   static get Description() {
-    return "Prints choosen built-in preset";
+    return "Prints built-in preset list or content of choosen preset.";
   }
   static Arguments() {
     return [
       {
         name: "name",
-        required: true,
-        validation: [/^[a-z0-9_\-]+$/i]
+        required: false,
+        validation: [...PresetLoader.List]
       }
     ];
   }
@@ -585,20 +640,71 @@ var CommandPreset = class extends CommandGeneric {
   //
   async start() {
     const presetName = this.ppllm.cmderw.getCommandArguments().name;
-    try {
-      const preset = await this.ppllm.presetLoader.loadPresetFile(presetName);
-      console.log(`Built-in '${presetName}' preset:
-`);
-      console.log(JSON.stringify(preset, void 0, 2));
-    } catch (err) {
-      console.error(`${this.ppllm.settingsHandler.settings.emoji ? `${General.Error} ` : ""} Error: ` + err.messages);
+    if (presetName) {
+      try {
+        const preset = await this.ppllm.presetLoader.loadPresetFile(presetName);
+        this.ppllm.logger.log(General.Success, `Built-in '${presetName}' preset:
+
+` + JSON.stringify(preset, void 0, 2) + "\n");
+      } catch (err) {
+        this.ppllm.logger.error(General.Error, `Error: ` + err.messages);
+      }
+    } else {
+      this.ppllm.logger.log(
+        General.Success,
+        `Built-in preset list:
+
+${JSON.stringify(PresetLoader.List, null, 2)}
+
+Preset 'general' is always loaded with choosen preset during prompt generation.
+`
+      );
     }
   }
 };
 
+// src/commands/Template/index.ts
+import path7 from "path";
+import fs6 from "fs";
+var CommandTemplate = class extends CommandGeneric {
+  static get Name() {
+    return "template";
+  }
+  static get Description() {
+    return `Generates custom prompt template in current working directory for editing. Name 'custom' will be used if not provided.`;
+  }
+  static Arguments() {
+    return [
+      {
+        name: "name",
+        required: false,
+        validation: [{ pattern: /^[a-z0-9_\-]+$/i, description: "Word of letters, numbers, underscores and hyphens only" }]
+      }
+    ];
+  }
+  //
+  constructor(ppllm2) {
+    super(ppllm2);
+  }
+  //
+  async start() {
+    const name = this.ppllm.cmderw.getCommandArguments().name ?? "custom";
+    const filename = `${name}.prompt.hbs`;
+    const filePath = path7.resolve(process.cwd(), filename);
+    if (fs6.existsSync(filePath)) {
+      this.ppllm.logger.error(General.Error, `File ${filename} already exists.`);
+      process.exit(-1);
+    }
+    const defaultTemplateStr = Templates.Load(Templates.Default, false);
+    fs6.writeFileSync(filePath, defaultTemplateStr, "utf-8");
+    const relFilePath = path7.relative(process.cwd(), filePath);
+    this.ppllm.logger.log(General.Saved, `Cloned default template to: ${relFilePath}`);
+  }
+};
+
 // src/DirConfigHandler.ts
-import path6 from "path";
-import fs5 from "fs";
+import path8 from "path";
+import fs7 from "fs";
 var DirConfigHandler = class {
   ppllm;
   //
@@ -607,12 +713,12 @@ var DirConfigHandler = class {
   }
   //
   read(dircfgPath) {
-    const directory = path6.dirname(dircfgPath);
+    const directory = path8.dirname(dircfgPath);
     try {
-      const content = fs5.readFileSync(dircfgPath, "utf8");
+      const content = fs7.readFileSync(dircfgPath, "utf8");
       const dirconfig = JSON.parse(content);
       if (Array.isArray(dirconfig.ignore))
-        dirconfig.ignore = dirconfig.ignore.map((p) => path6.resolve(directory, p));
+        dirconfig.ignore = dirconfig.ignore.map((p) => path8.resolve(directory, p));
       return dirconfig;
     } catch {
       return void 0;
@@ -620,46 +726,9 @@ var DirConfigHandler = class {
   }
 };
 
-// src/PresetLoader.ts
-import path7 from "path";
-import fs6 from "fs";
-var PresetLoader = class _PresetLoader {
-  static DIRECTORY = path7.resolve(getProjectRoot(), `./assets/presets/ignore`);
-  static GENERAL_PRESET_NAME = "_general";
-  static SUFFIX = ".ignore.json";
-  //
-  list;
-  //
-  constructor() {
-    this.list = (() => {
-      const files = fs6.readdirSync(_PresetLoader.DIRECTORY);
-      return files.filter((f) => f.endsWith(_PresetLoader.SUFFIX) && !f.startsWith(_PresetLoader.GENERAL_PRESET_NAME)).map((f) => f.split(".")[0]);
-    })();
-  }
-  //
-  async loadPreset(presetName) {
-    const all = [];
-    all.push(
-      ...await this.loadPresetFile(_PresetLoader.GENERAL_PRESET_NAME)
-    );
-    presetName !== "general" && all.push(
-      ...await this.loadPresetFile(presetName)
-    );
-    return all;
-  }
-  //
-  async loadPresetFile(name) {
-    if (!this.list.includes(name) && name != _PresetLoader.GENERAL_PRESET_NAME)
-      throw new Error(`Built-in preset '${name}' doesn't exist.`);
-    const fullPath = path7.join(_PresetLoader.DIRECTORY, `${name}.ignore.json`);
-    const raw = await fs6.promises.readFile(fullPath, "utf8");
-    return JSON.parse(raw);
-  }
-};
-
 // src/SettingsHandler.ts
-import path8 from "path";
-import fs7 from "fs";
+import path9 from "path";
+import fs8 from "fs";
 var SettingsHandler = class {
   static RegisterOptions(option) {
     option(
@@ -721,7 +790,7 @@ var SettingsHandler = class {
       const val = fromFile_settings[key];
       const valid = this.ppllm.cmderw.isOptionValueValid(key, val);
       if (valid === false) {
-        console.error(`${settings.emoji ? `${General.Error} ` : ""}Invalid setting value in settings file: '${key}' can't be ${JSON.stringify(val)}`);
+        this.ppllm.logger.error(General.Error, `Invalid setting value in settings file: '${key}' can't be ${JSON.stringify(val)}`);
         process.exit(-1);
       }
     }
@@ -731,17 +800,17 @@ var SettingsHandler = class {
   storeUserSettings() {
     if (Object.keys(this.getOptions(true)).length) {
       const savedTo = this.storeSettingsFile(this.userSettings);
-      const savedToRel = path8.relative(process.cwd(), savedTo);
-      console.log(`${this.settings.emoji ? `${General.Saved} ` : ""}Settings saved to: ${savedToRel}`);
+      const savedToRel = path9.relative(process.cwd(), savedTo);
+      this.ppllm.logger.log(General.Saved, `Settings saved to: ${savedToRel}`);
     } else {
-      console.log(`${this.settings.emoji ? `${General.Saved} ` : ""}No new settings to save`);
+      this.ppllm.logger.log(General.Saved, `No new settings to save`);
     }
   }
   //
   readSettingsFile() {
-    const settingsPath = path8.join(process.cwd(), this.ppllm.o.settings);
+    const settingsPath = path9.join(process.cwd(), this.ppllm.o.settings);
     try {
-      const content = fs7.readFileSync(settingsPath, "utf8");
+      const content = fs8.readFileSync(settingsPath, "utf8");
       const settings = JSON.parse(content);
       return settings;
     } catch {
@@ -749,8 +818,8 @@ var SettingsHandler = class {
     }
   }
   storeSettingsFile(settings) {
-    const settingsPath = path8.resolve(process.cwd(), this.ppllm.o.settings);
-    fs7.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), "utf8");
+    const settingsPath = path9.resolve(process.cwd(), this.ppllm.o.settings);
+    fs8.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), "utf8");
     return settingsPath;
   }
 };
@@ -762,8 +831,10 @@ var PPLLM = class _PPLLM {
   static {
     this.CommandsSet.add(CommandGenerate);
     this.CommandsSet.add(CommandPreset);
+    this.CommandsSet.add(CommandTemplate);
   }
   //
+  logger = new Logger(this);
   dirConfigHandler;
   cmderw;
   o;

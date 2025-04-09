@@ -7,9 +7,11 @@ import * as Consts from '@/src/global/consts.js';
 import Logger from '@/src/Logger.js';
 
 import CommandGeneric from "./commands/Generic.js";
+import CommandInit from "./commands/Init/index.js";
 import CommandGenerate from "./commands/Generate/index.js";
 import CommandPreset from "./commands/Preset/index.js";
 import CommandTemplate from "./commands/Template/index.js";
+import CommandVersion from "./commands/Version/index.js";
 
 
 import DirConfigHandler from './DirConfigHandler.js';
@@ -30,9 +32,11 @@ export default class PPLLM {
 	static readonly DefaultCommand = CommandGenerate;
 
 	static {
+		this.CommandsSet.add(CommandInit);
 		this.CommandsSet.add(CommandGenerate);
 		this.CommandsSet.add(CommandPreset);
 		this.CommandsSet.add(CommandTemplate);
+		this.CommandsSet.add(CommandVersion);
 	}
 
 	//
