@@ -108,7 +108,7 @@ export default class SettingsHandler {
             const valid = this.ppllm.cmderw.isOptionValueValid(key, val);
 
             if (valid === false) {
-                console.error(`${settings.emoji ? `${Emoji.General.Error} ` : ''}Invalid setting value in settings file: '${key}' can't be ${JSON.stringify(val)}`);
+                this.ppllm.logger.error(Emoji.General.Error, `Invalid setting value in settings file: '${key}' can't be ${JSON.stringify(val)}`);
                 process.exit(-1);
             }
         }
@@ -125,10 +125,10 @@ export default class SettingsHandler {
             const savedTo = this.storeSettingsFile(this.userSettings);
             const savedToRel = path.relative(process.cwd(), savedTo);
 
-            console.log(`${this.settings.emoji ? `${Emoji.General.Saved} ` : ''}Settings saved to: ${savedToRel}`);
+            this.ppllm.logger.log(Emoji.General.Saved, `Settings saved to: ${savedToRel}`);
         }
         else {
-            console.log(`${this.settings.emoji ? `${Emoji.General.Saved} ` : ''}No new settings to save`);
+            this.ppllm.logger.log(Emoji.General.Saved, `No new settings to save`);
         }
     }
 

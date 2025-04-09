@@ -22,7 +22,7 @@ export default class Templates {
 
             return files
                 .filter(f => f.endsWith(this.SUFFIX))
-                .map(f => f.split('.')[0]); // np. eng.prompt.hbs → eng
+                .map(f => f.split('.')[0]); // eng.prompt.hbs → eng
         })();
 
         //
@@ -39,7 +39,10 @@ export default class Templates {
 
     //
 
-    static Load(template: string) {
+    static Load(template: string): string;
+    static Load(template: string, compile: false): string;
+    static Load(template: string, compile: true): HandlebarsTemplateDelegate<any>;
+    static Load(template: string, compile?: boolean): HandlebarsTemplateDelegate<any> | string {
         const existsInBuiltIn = this.Exists(template);
 
         const templatePath = (() => {
@@ -53,7 +56,7 @@ export default class Templates {
 
         try {
             const content = fs.readFileSync(templatePath, 'utf-8');
-            return Handlebars.compile(content);
+            return compile ? Handlebars.compile(content) : content;
         }
         catch (err) {
             if (existsInBuiltIn)

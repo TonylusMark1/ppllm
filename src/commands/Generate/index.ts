@@ -13,10 +13,11 @@ import * as Utils from '@/src/helpers/utils.js';
 import type PPLLM from '@/src/index.js';
 import type { Options as PPLLM_Options } from '@/src/index.js';
 import type { SettingsOptions as PPLLM_SettingsOptions } from '@/src/SettingsHandler.js';
+import PresetLoader from '@/src/PresetLoader.js';
 
 import CommandGeneric from "../Generic.js";
 
-import Templates from './Templates.js';
+import Templates from '../../Templates.js';
 
 import PromptGenerator from './PromptGenerator.js';
 
@@ -46,7 +47,7 @@ export default class CommandGenerate extends CommandGeneric<Options> {
     }
 
     static get Description() {
-        return 'Generate prompt';
+        return 'Generates prompt.';
     }
 
     static Options(option: ScopedRegisterOptionCallback, ppllm: PPLLM): void {
@@ -101,7 +102,7 @@ export default class CommandGenerate extends CommandGeneric<Options> {
                 description: 'Preset of ignore list to use',
                 defaultValue: "disable",
 
-                validation: ["disable", "general", ...ppllm.presetLoader.list],
+                validation: ["disable", ...PresetLoader.List],
                 valueParser: (x: string) => x.toLowerCase(),
             }
         );
@@ -168,7 +169,7 @@ export default class CommandGenerate extends CommandGeneric<Options> {
             this.outputResult(prompt);
         }
         catch (err) {
-            console.error(`${this.ppllm.settingsHandler.settings.emoji ? `${Emoji.General.Error} ` : ''} Error:`, err);
+            this.ppllm.logger.error(Emoji.General.Error, `Error:`, err);
         }
     }
 
@@ -214,7 +215,7 @@ export default class CommandGenerate extends CommandGeneric<Options> {
             const relPath = path.relative(process.cwd(), this.absoluteOutputPath);
             const displayPath = relPath.startsWith('..') ? this.absoluteOutputPath : `./${relPath}`;
 
-            console.log(`${this.ppllm.settingsHandler.settings.emoji ? `${Emoji.General.Saved} ` : ''}Prompt generated and saved to file: ${displayPath}`);
+            this.ppllm.logger.log(Emoji.General.Saved, `Prompt generated and saved to file: ${displayPath}`);
         }
     }
 }

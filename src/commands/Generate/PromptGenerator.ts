@@ -5,7 +5,7 @@ import * as Emoji from '@/src/global/emoji.js';
 
 import * as Utils from '@/src/helpers/utils.js';
 
-import Templates from './Templates.js';
+import Templates from '@/src/Templates.js';
 import { TreeNode, TreeNodeDir } from './TreeNode.js';
 
 import type CommandGenerate from './index.js';
@@ -47,7 +47,7 @@ export default class PromptGenerator {
 	//
 
 	async generate(root: TreeNodeDir): Promise<string> {
-		const template = Templates.Load(this.parent.settings.template);
+		const template = Templates.Load(this.parent.settings.template, true);
 
 		//
 
@@ -163,7 +163,7 @@ export default class PromptGenerator {
 				templateFile.content = `File read error: ${err}`;
 				templateFile.exception = true;
 
-				console.log(templateFile.content);
+				this.parent.ppllm.logger.error(Emoji.General.Error, templateFile.content);
 			}
 
 			//

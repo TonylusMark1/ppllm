@@ -1,7 +1,5 @@
-- Jakiś fajny prosty logger
-- Tryb interaktywny
+- Tryb interaktywny (komenda init)
 - nie działa ppllm globalnie w C:\Users\SomeUser, dlaczego?
-- Zamnienić język komentarzy w kodzie
 - Muszę zrobić lepszy readme, pokazujący wszystkie możliwości
 
 pierdoły:

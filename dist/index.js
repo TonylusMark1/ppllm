@@ -395,7 +395,7 @@ var TreeScanner = class {
     for (const item of items) {
       const itemPath = path4.join(dir, item.name);
       const itemAbsPath = path4.resolve(itemPath);
-      if (item.name === this.parent.o.dirconfig)
+      if (item.name === this.parent.o.dirconfig || item.name == this.parent.o.settings)
         continue;
       if (this.parent.absoluteOutputPath && itemAbsPath === this.parent.absoluteOutputPath)
         continue;

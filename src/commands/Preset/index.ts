@@ -3,13 +3,14 @@ import { CommandArgument } from 'commanderwrapper';
 import * as Emoji from '@/src/global/emoji.js';
 
 import type PPLLM from '@/src/index.js';
+import PresetLoader from '@/src/PresetLoader.js';
 
 import CommandGeneric from "../Generic.js";
 
 //
 
 interface CommandArguments {
-    name: string;
+    name?: string;
 }
 
 //
@@ -20,16 +21,16 @@ export default class CommandPreset extends CommandGeneric {
     }
 
     static get Description() {
-        return 'Prints choosen built-in preset';
+        return 'Prints built-in preset list or content of choosen preset.';
     }
 
     static Arguments(): CommandArgument[] {
         return [
             {
                 name: "name",
-                required: true,
-                validation: [/^[a-z0-9_\-]+$/i],
-            }
+                required: false,
+                validation: [...PresetLoader.List],
+            },
         ]
     }
 
@@ -46,16 +47,25 @@ export default class CommandPreset extends CommandGeneric {
 
         //
 
-        try {
-            const preset = await this.ppllm.presetLoader.loadPresetFile(presetName);
+        if (presetName) {
+            try {
+                const preset = await this.ppllm.presetLoader.loadPresetFile(presetName);
 
-            //
+                //
 
-            console.log(`Built-in '${presetName}' preset:\n`);
-            console.log(JSON.stringify(preset, undefined, 2));
+                this.ppllm.logger.log(Emoji.General.Success, `Built-in '${presetName}' preset:\n\n` + JSON.stringify(preset, undefined, 2) + "\n");
+            }
+            catch (err: any) {
+                this.ppllm.logger.error(Emoji.General.Error, `Error: ` + err.messages);
+            }
         }
-        catch(err: any) {
-            console.error(`${this.ppllm.settingsHandler.settings.emoji ? `${Emoji.General.Error} ` : ''} Error: ` + err.messages);
+        else {
+            this.ppllm.logger.log(
+                Emoji.General.Success,
+                `Built-in preset list:\n\n${JSON.stringify(PresetLoader.List, null, 2)}\n\n` +
+                `Preset 'general' is always loaded with choosen preset during prompt generation.` +
+                `\n`
+            );
         }
     }
 }

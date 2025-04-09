@@ -10,8 +10,9 @@
         "rootDir": "src",
         "esModuleInterop": true,
         "strict": true,
+        "baseUrl": ".",
         "paths": {
-            "@/*": ["./*"],
+            "@/*": ["./*"]
         }
     },
     "include": [

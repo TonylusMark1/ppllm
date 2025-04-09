@@ -4,9 +4,13 @@ import CommanderWrapper, { ScopedRegisterOptionCallback } from 'commanderwrapper
 
 import * as Consts from '@/src/global/consts.js';
 
+import Logger from '@/src/Logger.js';
+
 import CommandGeneric from "./commands/Generic.js";
 import CommandGenerate from "./commands/Generate/index.js";
 import CommandPreset from "./commands/Preset/index.js";
+import CommandTemplate from "./commands/Template/index.js";
+
 
 import DirConfigHandler from './DirConfigHandler.js';
 import PresetLoader from './PresetLoader.js';
@@ -28,9 +32,12 @@ export default class PPLLM {
 	static {
 		this.CommandsSet.add(CommandGenerate);
 		this.CommandsSet.add(CommandPreset);
+		this.CommandsSet.add(CommandTemplate);
 	}
 
 	//
+
+	readonly logger = new Logger(this);
 
 	readonly dirConfigHandler: DirConfigHandler;
 

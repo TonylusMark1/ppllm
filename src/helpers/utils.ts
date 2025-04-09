@@ -28,7 +28,6 @@ export function ConvertPathToPOSIX(path: string) {
 	return slash(path);
 }
 
-// Funkcja parsująca rozmiar pliku; zwraca liczbę bajtów.
 export function ConvertSizeToBytes(input: string): number {
 	const match = /^(\d+) *(B|KB|MB|GB)?$/i.exec(input);
 
@@ -60,7 +59,6 @@ export function ConvertSizeToBytes(input: string): number {
 	return number * multiplier;
 }
 
-// Funkcja sprawdzająca, czy dany plik jest binarny.
 export async function IsFileBinary(filePath: string): Promise<boolean> {
 	const type = await fileTypeFromFile(filePath);
 
