@@ -7,7 +7,7 @@ import * as Utils from '@/src/helpers/utils.js';
 
 export default class PresetLoader {
     private static readonly DIRECTORY = path.resolve(Utils.getProjectRoot(), `./assets/presets/ignore`);
-    
+
     private static readonly GENERAL_PRESET_NAME = '_general';
     private static readonly SUFFIX = '.ignore.json';
 
@@ -30,30 +30,17 @@ export default class PresetLoader {
     //
 
     async loadPreset(presetName: string): Promise<string[]> {
-        if (presetName === 'disable')
-            return [];
-
-        //
-
         const all: string[] = [];
 
         //
 
-        try {
-            // _general jest zawsze włączany (jeśli preset != false)
-            const general = await this.loadPresetFile(PresetLoader.GENERAL_PRESET_NAME);
-            all.push(...general);
-        }
-        catch(err) {
-            throw new Error(`Cannot load general preset. Error:` + err);
-        }
+        all.push( // _general jest zawsze włączany (jeśli preset != false)
+            ...await this.loadPresetFile(PresetLoader.GENERAL_PRESET_NAME)
+        );
 
-        //
-
-        if (presetName !== 'general') {
-            const preset = await this.loadPresetFile(presetName);
-            all.push(...preset);
-        }
+        presetName !== 'general' && all.push(
+            ...await this.loadPresetFile(presetName)
+        );
 
         //
 
@@ -63,7 +50,7 @@ export default class PresetLoader {
     //
 
     async loadPresetFile(name: string) {
-        if ( !this.list.includes(name) && name != PresetLoader.GENERAL_PRESET_NAME )
+        if (!this.list.includes(name) && name != PresetLoader.GENERAL_PRESET_NAME)
             throw new Error(`Built-in preset '${name}' doesn't exist.`);
 
         //

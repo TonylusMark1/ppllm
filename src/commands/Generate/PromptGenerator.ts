@@ -147,12 +147,12 @@ export default class PromptGenerator {
 
 				//
 
-				if (fileContentMaxSizeInBytes && stats.size > fileContentMaxSizeInBytes) {
-					templateFile.content = `File is too large and was not loaded`;
+				if (file.isBinary) {
+					templateFile.content = `File is binary and was not loaded`;
 					templateFile.exception = true;
 				}
-				else if (file.isBinary) {
-					templateFile.content = `File is binary and was not loaded`;
+				else if (fileContentMaxSizeInBytes && stats.size > fileContentMaxSizeInBytes) {
+					templateFile.content = `File is too large and was not loaded`;
 					templateFile.exception = true;
 				}
 				else {

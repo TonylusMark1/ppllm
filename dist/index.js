@@ -1,311 +1,11 @@
 #!/usr/bin/env node
 
-// src/CommanderWrapper/index.ts
-import { Command, Option } from "commander";
-import * as colorette2 from "colorette";
-
-// src/CommanderWrapper/validation.ts
-function FindFirstInvalidRule(validation) {
-  for (const rule of validation) {
-    const isDirectValue = typeof rule === "string" || typeof rule === "number" || typeof rule === "boolean";
-    const isRegExp = rule instanceof RegExp;
-    const isPatternObject = typeof rule === "object" && rule !== null && "pattern" in rule && rule.pattern instanceof RegExp && "description" in rule && typeof rule.description === "string";
-    if (!isDirectValue && !isRegExp && !isPatternObject)
-      return rule;
-  }
-}
-function IsValueValid(value, validation) {
-  if (!validation || validation.length === 0)
-    return true;
-  return validation.some((rule) => {
-    if (rule instanceof RegExp)
-      return rule.test(String(value));
-    if (typeof rule === "object" && rule !== null && "pattern" in rule)
-      return rule.pattern.test(String(value));
-    return rule === value;
-  });
-}
-
-// src/CommanderWrapper/help.ts
-import * as colorette from "colorette";
-function generateGlobalHelpText(commands) {
-  const lines = [];
-  lines.push(colorette.bold(`
-Available Commands:
-`));
-  for (const [commandName, commandMeta] of commands.entries()) {
-    const description = commandMeta.commander.description() || "";
-    lines.push(`  ${colorette.cyan(commandName)}`);
-    if (description.trim() !== "")
-      lines.push(`    ${description}`);
-    lines.push("");
-  }
-  lines.push(`${colorette.green("Tip")}: For detailed options, use ${colorette.cyan("<command> --help")}
-`);
-  return lines.join("\n");
-}
-function generateHelpTextForCommand(commandName, commandMeta) {
-  const lines = [];
-  if (commandMeta.arguments.length > 0) {
-    lines.push(colorette.underline("Arguments:") + "\n");
-    for (const arg of commandMeta.arguments)
-      lines.push(`  ${colorette.cyan(arg.config.name)}${arg.config.required ? colorette.red(" (required)") : ""}`);
-    lines.push("");
-  }
-  lines.push(colorette.bold(`
-Options for command: ${colorette.cyan(commandName)}
-`));
-  const groups = Object.entries(commandMeta.groups);
-  if (groups.length === 0) {
-    lines.push(colorette.yellow("No options available for this command.\n"));
-    return lines.join("\n");
-  }
-  groups.unshift(["built-in", [{
-    groupName: "built-in",
-    flags: "-h, --help",
-    description: "Show help",
-    tags: [],
-    commanderOption: null
-  }]]);
-  const allOptions = groups.flatMap(([, options]) => options);
-  const flagPadding = Math.max(...allOptions.map((opt) => opt.flags.length)) + 2;
-  for (const [groupName, options] of groups) {
-    lines.push(colorette.underline(`${groupName}:`) + "\n");
-    for (const option of options) {
-      const flags = colorette.cyan(option.flags.padEnd(flagPadding));
-      lines.push(`  ${flags} ${option.description}`);
-    }
-    lines.push("");
-  }
-  lines.push("");
-  return lines.join("\n");
-}
-
-// src/CommanderWrapper/index.ts
-var CommanderWrapper = class _CommanderWrapper {
-  static UNGROUPED_GROUP_NAME = "ungrouped";
-  //
-  mainProgram = new Command();
-  commands = /* @__PURE__ */ new Map();
-  usedCommand = null;
-  //
-  constructor() {
-  }
-  //
-  registerCommand(commandName, description, opts, setup) {
-    const command = this.obtainCommand(commandName, opts?.isDefault ?? false, opts?.arguments);
-    command.commander.description(description).action((...args) => {
-      this.usedCommand = commandName;
-      this.processCommandArguments(command, args);
-    });
-    command.commander.allowUnknownOption(!(opts?.strictMode ?? true));
-    if (setup) {
-      const scopedRegisterOption = (meta, config) => {
-        this.registerOption(commandName, meta, config);
-      };
-      setup(scopedRegisterOption);
-    }
-  }
-  processCommandArguments(command, args) {
-    const parsedArgs = [];
-    for (let i = 0; i < command.arguments.length; i++) {
-      const argConfig = command.arguments[i].config;
-      const rawValue = args[i];
-      if (argConfig.required && rawValue === void 0)
-        throw new Error(colorette2.red(`Missing required argument: ${colorette2.yellow(argConfig.name)}`));
-      if (rawValue !== void 0) {
-        const parsedValue = argConfig.parser ? argConfig.parser(rawValue) : rawValue;
-        if (argConfig.validation && !IsValueValid(parsedValue, argConfig.validation)) {
-          const allowed = this.formatAllowedValues(argConfig.validation);
-          throw new Error(colorette2.red(`Invalid value for argument "${colorette2.yellow(argConfig.name)}".
-${colorette2.green("Allowed")}: ${allowed}`));
-        }
-        parsedArgs.push({ config: argConfig, value: parsedValue });
-      } else {
-        parsedArgs.push({ config: argConfig, value: void 0 });
-      }
-    }
-    command.arguments = parsedArgs;
-  }
-  //
-  registerOption(commandName, meta, config) {
-    const command = this.getCommand(commandName);
-    const groupName = meta.groupName ?? _CommanderWrapper.UNGROUPED_GROUP_NAME;
-    const tags = meta.tags ?? [];
-    const commanderOption = new Option(config.flags, config.description);
-    if (config.defaultValue !== void 0)
-      commanderOption.default(config.defaultValue);
-    if (config.validation) {
-      if (commanderOption.isBoolean())
-        throw new Error(`Option "${config.flags}" is a boolean flag, but validation was provided.`);
-      const invalidRule = FindFirstInvalidRule(config.validation);
-      if (invalidRule)
-        throw new Error(`Invalid validation rule for option "${config.flags}" ${JSON.stringify(invalidRule)}.`);
-    }
-    const option = {
-      ...config,
-      commanderOption,
-      groupName,
-      tags
-    };
-    const parserCallback = this.createOptionArgParser(option, config, command);
-    commanderOption.argParser(parserCallback);
-    if (commanderOption.isBoolean()) {
-      this.getLongFlagNames(commanderOption).forEach((longFlag) => {
-        command.commander.option(`--no-${longFlag}`, "", () => {
-          command.userProvidedOptions.add(option.commanderOption.attributeName());
-          return false;
-        });
-      });
-    }
-    if (option.defaultValue !== void 0)
-      this.validateOptionValue(option.defaultValue, option, true);
-    this.enhanceDescription(option);
-    if (!command.groups[groupName])
-      command.groups[groupName] = [];
-    command.groups[groupName].push(option);
-    command.commander.addOption(commanderOption);
-  }
-  createOptionArgParser(option, config, command) {
-    if (option.commanderOption.isBoolean()) {
-      return (value) => {
-        command.userProvidedOptions.add(option.commanderOption.attributeName());
-        return true;
-      };
-    } else {
-      return (value) => {
-        command.userProvidedOptions.add(option.commanderOption.attributeName());
-        const parsedValue = config.valueParser ? config.valueParser(value) : value;
-        this.validateOptionValue(parsedValue, option, false);
-        if (option.onValidate)
-          option.onValidate(parsedValue);
-        return parsedValue;
-      };
-    }
-  }
-  //
-  parse(argv) {
-    this.mainProgram.helpInformation = () => generateGlobalHelpText(this.commands);
-    this.mainProgram.parse(argv || process.argv);
-  }
-  //
-  getUsedCommand() {
-    return this.usedCommand;
-  }
-  getOptions(options) {
-    const commandName = this.usedCommand;
-    if (!commandName)
-      throw new Error("No command has been used. Cannot retrieve options.");
-    const command = this.getCommand(commandName);
-    const opts = command.commander.opts();
-    const result = {};
-    const groups = options?.groupName ? { [options.groupName]: command.groups[options.groupName] ?? [] } : command.groups;
-    for (const groupOptions of Object.values(groups)) {
-      for (const option of groupOptions) {
-        const hasAllTags = options?.tags ? options.tags.every((tag) => option.tags.includes(tag)) : true;
-        if (!hasAllTags)
-          continue;
-        const optionName = option.commanderOption.attributeName();
-        if (!options?.onlyUserProvided || command.userProvidedOptions.has(optionName))
-          result[optionName] = opts[optionName];
-      }
-    }
-    return result;
-  }
-  getCommandArguments() {
-    const command = this.getCommand(this.usedCommand);
-    const result = {};
-    for (const arg of command.arguments)
-      result[arg.config.name] = arg.value;
-    return result;
-  }
-  //
-  hasUserSetOption(commandName, optionName) {
-    const command = this.getCommand(commandName);
-    return command.userProvidedOptions.has(optionName);
-  }
-  isOptionValueValid(optionName, value, ignoreAbsence = true) {
-    const command = this.getCommand(this.usedCommand);
-    for (const groupOptions of Object.values(command.groups)) {
-      for (const option of groupOptions) {
-        if (option.commanderOption.attributeName() === optionName)
-          return IsValueValid(value, option.validation);
-      }
-    }
-    if (!ignoreAbsence)
-      throw new Error(`Option "${optionName}" not found in command "${this.usedCommand}".`);
-  }
-  //
-  getCommand(commandName) {
-    const command = this.commands.get(commandName);
-    if (!command)
-      throw new Error(`Command "${commandName}" not found.`);
-    return command;
-  }
-  obtainCommand(commandName, isDefault = false, commandArgs = []) {
-    let meta = this.commands.get(commandName);
-    if (meta)
-      return meta;
-    const argString = commandArgs.map((arg) => arg.required ? `<${arg.name}>` : `[${arg.name}]`).join(" ");
-    const cmd_nameAndArgs = argString ? `${commandName} ${argString}` : commandName;
-    const cmd_opts = { isDefault };
-    const commander = this.mainProgram.command(cmd_nameAndArgs, cmd_opts);
-    meta = {
-      commander,
-      groups: {},
-      userProvidedOptions: /* @__PURE__ */ new Set(),
-      arguments: commandArgs.map((arg) => ({ config: arg, value: void 0 }))
-    };
-    commander.helpInformation = () => generateHelpTextForCommand(commandName, this.getCommand(commandName));
-    this.commands.set(commandName, meta);
-    return meta;
-  }
-  //
-  getLongFlagNames(option) {
-    const matches = Array.from(option.flags.matchAll(/--([a-zA-Z0-9-]+)/g));
-    return matches.map((match) => match[1]);
-  }
-  validateOptionValue(value, option, isDefault) {
-    const isValid = IsValueValid(value, option.validation);
-    if (!isValid) {
-      const source = isDefault ? "Default value" : "Invalid value";
-      const allowed = this.formatAllowedValues(option.validation);
-      throw new Error(colorette2.red(`${source} for option "${colorette2.yellow(option.commanderOption.attributeName())}" is not allowed.
-${colorette2.green("Allowed")}: ${allowed}`));
-    }
-  }
-  //
-  enhanceDescription(option) {
-    const parts = [];
-    parts.push(option.description);
-    if (option.defaultValue !== void 0)
-      parts.push(`(${colorette2.green("Default")}: ${colorette2.yellow(JSON.stringify(option.defaultValue))})`);
-    if (option.commanderOption.isBoolean()) {
-      const longFlagNames = this.getLongFlagNames(option.commanderOption);
-      if (longFlagNames.length > 0) {
-        const flags = longFlagNames.map((name) => colorette2.cyan(`--no-${name}`)).join(", ");
-        parts.push(`(${colorette2.green("Tip")}: Use ${flags} to explicitly set false)`);
-      }
-    }
-    if (option.validation && option.validation.length > 0) {
-      const allowed = this.formatAllowedValues(option.validation);
-      parts.push(`(${colorette2.green("Allowed")}: ${colorette2.yellow(allowed)})`);
-    }
-    option.description = parts.filter(Boolean).join(" ");
-  }
-  //
-  formatAllowedValues(validation) {
-    return validation.map((rule) => {
-      if (rule instanceof RegExp)
-        return rule.toString();
-      if (typeof rule === "object" && rule !== null && "pattern" in rule)
-        return `<${rule.description}>`;
-      return JSON.stringify(rule);
-    }).filter(Boolean).join(", ");
-  }
-};
+// src/index.ts
+import CommanderWrapper from "commanderwrapper";
 
 // src/global/consts.ts
+var REGEXP_FILENAME = /^[^\\/\\0]+(?:\.[a-zA-Z0-9_\-]+)?$/;
+var REGEXP_DIRECTORY_PATH = /^(?:\.{1,2}|(?:\.{0,2}[\\/])?(?:[^\\/\\0]+(?:[\\/]|$))+)$/;
 var DEFAULT_DIRCONFIG_FILENAME = "ppllm.dirconfig.json";
 var DEFAULT_SETTINGS_FILENAME = "ppllm.settings.json";
 var DEFAULT_OUTPUT_FILENAME = "ppllm.prompt.txt";
@@ -613,11 +313,11 @@ var PromptGenerator = class {
       };
       try {
         const stats = await fs2.promises.stat(file.absolutePath);
-        if (fileContentMaxSizeInBytes && stats.size > fileContentMaxSizeInBytes) {
-          templateFile.content = `File is too large and was not loaded`;
-          templateFile.exception = true;
-        } else if (file.isBinary) {
+        if (file.isBinary) {
           templateFile.content = `File is binary and was not loaded`;
+          templateFile.exception = true;
+        } else if (fileContentMaxSizeInBytes && stats.size > fileContentMaxSizeInBytes) {
+          templateFile.content = `File is too large and was not loaded`;
           templateFile.exception = true;
         } else {
           templateFile.content = await fs2.promises.readFile(file.absolutePath, "utf8");
@@ -741,7 +441,7 @@ var CommandGenerate = class extends CommandGeneric {
         flags: "-d, --dir <dir>",
         description: "Source directory to scan.",
         defaultValue: ".",
-        validation: [{ pattern: /^.+$/i, description: "directory path" }]
+        validation: [{ pattern: REGEXP_DIRECTORY_PATH, description: "directory path" }]
       }
     );
     option(
@@ -758,9 +458,9 @@ var CommandGenerate = class extends CommandGeneric {
       { groupName: "settings" },
       {
         flags: "-t, --template <template>",
-        description: `Filename for output file.`,
+        description: `Handlebars template used to generate prompt.`,
         defaultValue: Templates.Default,
-        validation: [...Templates.List, { pattern: /^.+$/i, description: "filename string" }]
+        validation: [...Templates.List, { pattern: REGEXP_FILENAME, description: "filename string" }]
       }
     );
     option(
@@ -769,7 +469,7 @@ var CommandGenerate = class extends CommandGeneric {
         flags: "-f, --file <filename>",
         description: `Filename for output file.`,
         defaultValue: DEFAULT_OUTPUT_FILENAME,
-        validation: [{ pattern: /^.+$/i, description: "filename string" }]
+        validation: [{ pattern: REGEXP_FILENAME, description: "filename string" }]
       }
     );
     option(
@@ -832,6 +532,8 @@ var CommandGenerate = class extends CommandGeneric {
   }
   //
   async getIgnorePresetMatchers() {
+    if (this.settings.preset == "disable")
+      return [];
     const presetPatterns = (await this.ppllm.presetLoader.loadPreset(this.settings.preset)).map((p) => path5.resolve(this.absoluteSourceDirectory, p));
     return this.buildIgnoreMatchers(this.absoluteSourceDirectory, this.absoluteSourceDirectory, presetPatterns);
   }
@@ -936,19 +638,13 @@ var PresetLoader = class _PresetLoader {
   }
   //
   async loadPreset(presetName) {
-    if (presetName === "disable")
-      return [];
     const all = [];
-    try {
-      const general = await this.loadPresetFile(_PresetLoader.GENERAL_PRESET_NAME);
-      all.push(...general);
-    } catch (err) {
-      throw new Error(`Cannot load general preset. Error:` + err);
-    }
-    if (presetName !== "general") {
-      const preset = await this.loadPresetFile(presetName);
-      all.push(...preset);
-    }
+    all.push(
+      ...await this.loadPresetFile(_PresetLoader.GENERAL_PRESET_NAME)
+    );
+    presetName !== "general" && all.push(
+      ...await this.loadPresetFile(presetName)
+    );
     return all;
   }
   //
@@ -972,7 +668,7 @@ var SettingsHandler = class {
         flags: "-c, --dirconfig <filename>",
         description: "Name of the dirconfig file.",
         defaultValue: DEFAULT_DIRCONFIG_FILENAME,
-        validation: [{ pattern: /^.+$/i, description: "filename string" }]
+        validation: [{ pattern: REGEXP_FILENAME, description: "filename string" }]
       }
     );
     option(
@@ -1079,12 +775,7 @@ var PPLLM = class _PPLLM {
     this.dirConfigHandler = new DirConfigHandler(this);
     this.cmderw = new CommanderWrapper();
     this.initCommands();
-    try {
-      this.cmderw.parse();
-    } catch (err) {
-      console.log(err);
-      process.exit(-1);
-    }
+    this.cmderw.parse();
     this.o = this.cmderw.getOptions();
     this.settingsHandler = new SettingsHandler(this);
     if (this.o.store)
@@ -1125,7 +816,7 @@ var PPLLM = class _PPLLM {
         flags: "-S, --settings <filename>",
         description: "Name of the settings file.",
         defaultValue: DEFAULT_SETTINGS_FILENAME,
-        validation: [{ pattern: /^.+$/i, description: "filename string" }]
+        validation: [{ pattern: REGEXP_FILENAME, description: "filename string" }]
       }
     );
     option(

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import CommanderWrapper, { ScopedRegisterOptionCallback } from './CommanderWrapper/index.js';
+import CommanderWrapper, { ScopedRegisterOptionCallback } from 'commanderwrapper';
 
 import * as Consts from '@/src/global/consts.js';
 
@@ -55,13 +55,7 @@ export default class PPLLM {
 
 		this.initCommands();
 
-		try {
-			this.cmderw.parse();
-		}
-		catch (err) {
-			console.log(err);
-			process.exit(-1);
-		}
+		this.cmderw.parse();
 
 		//
 
@@ -127,7 +121,7 @@ export default class PPLLM {
 				description: 'Name of the settings file.',
 				defaultValue: Consts.DEFAULT_SETTINGS_FILENAME,
 
-				validation: [{ pattern: /^.+$/i, description: "filename string" }],
+				validation: [{ pattern: Consts.REGEXP_FILENAME, description: "filename string" }],
 			}
 		);
 		option(

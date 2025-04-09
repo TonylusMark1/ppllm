@@ -45,7 +45,7 @@ export default class TreeScanner {
 
             //
 
-            if (item.name === this.parent.o.dirconfig)
+            if (item.name === this.parent.o.dirconfig || item.name == this.parent.o.settings)
                 continue;
 
             if (this.parent.absoluteOutputPath && itemAbsPath === this.parent.absoluteOutputPath)

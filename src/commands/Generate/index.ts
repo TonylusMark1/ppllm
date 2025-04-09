@@ -3,7 +3,7 @@ import fs from 'fs';
 import process from 'process';
 
 import { Minimatch } from 'minimatch';
-import { ScopedRegisterOptionCallback } from '@/src/CommanderWrapper/index.js';
+import { ScopedRegisterOptionCallback } from 'commanderwrapper';
 
 import * as Consts from '@/src/global/consts.js';
 import * as Emoji from '@/src/global/emoji.js';
@@ -33,7 +33,7 @@ export interface Options extends PPLLM_Options, Partial<SettingsOptions> {
 export interface SettingsOptions extends PPLLM_SettingsOptions {
     template: string;
     file: string;
-    preset: "disable" | "general" | string;
+    preset: "disable" | "general" | (string & {});
     maxSize: "disable" | string;
     binary: "none" | "tree" | "all";
 }
@@ -57,7 +57,7 @@ export default class CommandGenerate extends CommandGeneric<Options> {
                 description: 'Source directory to scan.',
                 defaultValue: '.',
 
-                validation: [{ pattern: /^.+$/i, description: "directory path" }],
+                validation: [{ pattern: Consts.REGEXP_DIRECTORY_PATH, description: "directory path" }],
             }
         );
         option(
@@ -78,10 +78,10 @@ export default class CommandGenerate extends CommandGeneric<Options> {
             { groupName: "settings" },
             {
                 flags: '-t, --template <template>',
-                description: `Filename for output file.`,
+                description: `Handlebars template used to generate prompt.`,
                 defaultValue: Templates.Default,
 
-                validation: [...Templates.List, { pattern: /^.+$/i, description: "filename string" }],
+                validation: [...Templates.List, { pattern: Consts.REGEXP_FILENAME, description: "filename string" }],
             }
         );
         option(
@@ -91,7 +91,7 @@ export default class CommandGenerate extends CommandGeneric<Options> {
                 description: `Filename for output file.`,
                 defaultValue: Consts.DEFAULT_OUTPUT_FILENAME,
 
-                validation: [{ pattern: /^.+$/i, description: "filename string" }],
+                validation: [{ pattern: Consts.REGEXP_FILENAME, description: "filename string" }],
             }
         );
         option(
@@ -175,6 +175,11 @@ export default class CommandGenerate extends CommandGeneric<Options> {
     //
 
     private async getIgnorePresetMatchers() {
+        if ( this.settings.preset == "disable" )
+            return [];
+
+        //
+
         const presetPatterns = (
             (await this.ppllm.presetLoader.loadPreset(this.settings.preset))
                 .map(p => path.resolve(this.absoluteSourceDirectory, p))

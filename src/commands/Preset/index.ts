@@ -1,4 +1,4 @@
-import { CommandArgument } from '@/src/CommanderWrapper/index.js';
+import { CommandArgument } from 'commanderwrapper';
 
 import * as Emoji from '@/src/global/emoji.js';
 

@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs';
-import { ScopedRegisterOptionCallback } from '@/src/CommanderWrapper/index.js';
+import { ScopedRegisterOptionCallback } from 'commanderwrapper';
 
 import * as Consts from '@/src/global/consts.js';
 import * as Emoji from '@/src/global/emoji.js';
@@ -25,7 +25,7 @@ export default class SettingsHandler {
 				description: 'Name of the dirconfig file.',
 				defaultValue: Consts.DEFAULT_DIRCONFIG_FILENAME,
 
-				validation: [{ pattern: /^.+$/i, description: "filename string" }],
+				validation: [{ pattern: Consts.REGEXP_FILENAME, description: "filename string" }],
 			}
 		);
 		option(
