@@ -1,0 +1,16 @@
+{
+    "extends": "general",
+    "ignore": [
+        "Library/",
+        "Temp/",
+        "Obj/",
+        "Build/",
+        "Builds/",
+        "Logs/",
+        "UserSettings/",
+        "*.csproj",
+        "*.unityproj",
+        "*.sln",
+        "*.userprefs"
+    ]
+}

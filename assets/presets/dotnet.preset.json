@@ -1,0 +1,14 @@
+{
+    "extends": "general",
+    "ignore": [
+        "bin/",
+        "obj/",
+        "*.user",
+        "*.suo",
+        "*.userosscache",
+        "*.sln.docstates",
+        "*.vs/",
+        ".vscode/",
+        ".idea/"
+    ]
+}

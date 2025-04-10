@@ -13,21 +13,11 @@ export default class Logger {
 
     //
 
-    log(emoji?: string, ...args: unknown[]) {
-        emoji = this.ppllm.settingsHandler.settings.emoji ? emoji : undefined;
-
-        if (emoji)
-            console.log(emoji, ...args);
-        else
-            console.log(...args);
+    log(...args: unknown[]) {
+        console.log(...args);
     }
 
-    error(emoji?: string, ...args: unknown[]) {
-        emoji = this.ppllm.settingsHandler.settings.emoji ? emoji : undefined;
-
-        if (emoji)
-            console.error(emoji, ...args);
-        else
-            console.error(...args);
+    error(...args: unknown[]) {
+        console.error(...args);
     }
 }

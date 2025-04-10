@@ -1,0 +1,24 @@
+{
+    "extends": "general",
+    "ignore": [
+        "__pycache__/",
+        "*.py[cod]",
+        "*.pyo",
+        ".pytest_cache/",
+        ".mypy_cache/",
+        ".venv/",
+        "venv/",
+        "env/",
+        ".coverage",
+        "coverage.xml",
+        "*.cover",
+        "htmlcov/",
+        ".tox/",
+        ".nox/",
+        ".eggs/",
+        "*.egg-info/",
+        "build/",
+        "dist/",
+        "*.log"
+    ]
+}

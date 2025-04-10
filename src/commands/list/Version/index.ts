@@ -7,7 +7,7 @@ import * as Utils from '@/src/helpers/utils.js';
 
 import type PPLLM from '@/src/index.js';
 
-import CommandGeneric from "../Generic.js";
+import CommandGeneric from "../../Generic.js";
 
 //
 

@@ -1,0 +1,9 @@
+{
+	"extends": "general",
+	"ignore": [
+		"bin/",
+		"pkg/",
+		"*.test",
+		"coverage.out"
+	]
+}

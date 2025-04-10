@@ -1,7 +1,0 @@
-[
-    "bin/",
-    "pkg/",
-    "*.test",
-    "coverage.out"
-  ]
-  

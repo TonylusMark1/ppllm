@@ -1,0 +1,7 @@
+{
+    "extends": "general",
+    "ignore": [
+        "target/",
+        "Cargo.lock"
+    ]
+}

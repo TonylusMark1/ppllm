@@ -14,13 +14,13 @@ const __dirname = path.dirname(__filename);
 
 export function getProjectRoot(): string {
 	// @ts-expect-error injected by bundler (tsup) for dist version of ppllm
-	if ( typeof __PROJECT_ROOT__ !== "undefined" ) {
+	if (typeof __PROJECT_ROOT__ !== "undefined") {
 		// @ts-expect-error injected by bundler (tsup) for dist version of ppllm
 		return path.resolve(__dirname, __PROJECT_ROOT__);
 	}
 
 	const currentDirectory = path.dirname(url.fileURLToPath(import.meta.url));
-	
+
 	return path.resolve(currentDirectory, '../../');
 }
 

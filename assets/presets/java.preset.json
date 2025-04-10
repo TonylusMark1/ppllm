@@ -1,0 +1,15 @@
+{
+    "extends": "general",
+    "ignore": [
+        "target/",
+        "bin/",
+        "build/",
+        "*.class",
+        "*.jar",
+        "*.war",
+        "*.ear",
+        ".classpath",
+        ".project",
+        ".settings/"
+    ]
+}

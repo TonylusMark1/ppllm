@@ -5,53 +5,85 @@ import * as Utils from '@/src/helpers/utils.js';
 
 //
 
+interface PresetJSON {
+    extends?: string | string[];
+    ignore: string[];
+}
+
+interface Preset {
+    ignore: string[];
+}
+
+//
+
 export default class PresetLoader {
-    private static readonly DIRECTORY = path.resolve(Utils.getProjectRoot(), `./assets/presets/ignore`);
+    private static readonly DIRECTORY = path.resolve(Utils.getProjectRoot(), `./assets/presets`);
+    private static readonly SUFFIX = '.preset.json';
 
-    private static readonly GENERAL_PRESET_NAME = 'general';
-    private static readonly SUFFIX = '.ignore.json';
-
-    static readonly List: string[] = (() => {
+    private static readonly FileList: string[] = (() => {
         const files = fs.readdirSync(PresetLoader.DIRECTORY);
 
         return files
-            .filter(f => f.endsWith(PresetLoader.SUFFIX))
-            .map(f => f.split('.')[0]) // node.ignore.json → node
+            .filter(f => f.endsWith(PresetLoader.SUFFIX));
     })();
+
+    static readonly List: string[] = this.FileList.map(f => f.split('.')[0]) // node.ignore.json → node
 
     //
 
-    async loadPreset(presetName: string): Promise<string[]> {
-        const all: string[] = [];
+    loadPreset(name: string) {
+        const preset: Preset = {
+            ignore: this.loadPresetRulesRecursive(name)
+        };
 
         //
 
-        all.push( // PresetLoader.GENERAL_PRESET_NAME is always included
-            ...await this.loadPresetFile(PresetLoader.GENERAL_PRESET_NAME)
-        );
+        return preset;
+    }
 
-        presetName !== 'general' && all.push(
-            ...await this.loadPresetFile(presetName)
-        );
+    private loadPresetRulesRecursive(name: string, seen = new Set<string>()): string[] {
+        if (seen.has(name))
+            throw new Error(`Circular dependency detected in preset '${name}'.`);
+    
+        //
+
+        seen.add(name);
 
         //
 
-        return all;
+        const preset = this.loadPresetFile(name);
+
+        const merged: string[] = [];
+
+        //
+
+        const extendsList = Array.isArray(preset.extends) ? preset.extends : (preset.extends ? [preset.extends] : []);
+
+        for (const parentName of extendsList)
+            merged.push(...this.loadPresetRulesRecursive(parentName, seen));
+
+        //
+
+        merged.push(...preset.ignore);
+
+        //
+
+        return merged;
     }
 
     //
 
-    async loadPresetFile(name: string) {
+    loadPresetFile(name: string) {
         if (!PresetLoader.List.includes(name))
             throw new Error(`Built-in preset '${name}' doesn't exist.`);
 
         //
 
-        const fullPath = path.join(PresetLoader.DIRECTORY, `${name}.ignore.json`);
-        const raw = await fs.promises.readFile(fullPath, 'utf8');
+        const fullPath = path.join(PresetLoader.DIRECTORY, `${name}${PresetLoader.SUFFIX}`);
+        const content = fs.readFileSync(fullPath, 'utf8');
 
         //
 
-        return JSON.parse(raw) as string[];
+        return <PresetJSON> JSON.parse(content);
     }
 }

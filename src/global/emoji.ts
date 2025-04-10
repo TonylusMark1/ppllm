@@ -1,7 +1,6 @@
 const EmojisForExtensions: Record<string, string> = {
     "jpeg,jpg,png,bmp,gif": "🖼️",
     "csv,xlsx": "📊",
-    //"js,ts,py,java,c,cpp,h,html,css,json,xml": "📜",
     "mp3,wav": "🎵",
     "mp4,avi": "🎬",
 }

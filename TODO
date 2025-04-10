@@ -1,7 +1,3 @@
+- Wyabstrachować opcje settings które będą współdzielić komendy generate i init do folderu commands/common
 - Tryb interaktywny (komenda init)
-- nie działa ppllm globalnie w C:\Users\SomeUser, dlaczego?
 - Muszę zrobić lepszy readme, pokazujący wszystkie możliwości
-
-pierdoły:
-
-- przy zapisywaniu user settings jeśli jakaś wartość jest zgodna z domyślną, to po co ją umieszczać w pliku?

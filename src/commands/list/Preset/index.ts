@@ -5,7 +5,7 @@ import * as Emoji from '@/src/global/emoji.js';
 import type PPLLM from '@/src/index.js';
 import PresetLoader from '@/src/PresetLoader.js';
 
-import CommandGeneric from "../Generic.js";
+import CommandGeneric from "../../Generic.js";
 
 //
 
@@ -49,7 +49,7 @@ export default class CommandPreset extends CommandGeneric {
 
         if (presetName) {
             try {
-                const preset = await this.ppllm.presetLoader.loadPresetFile(presetName);
+                const preset = this.ppllm.presetLoader.loadPresetFile(presetName);
 
                 //
 
@@ -62,7 +62,7 @@ export default class CommandPreset extends CommandGeneric {
         else {
             this.ppllm.logger.log(
                 Emoji.General.Success,
-                `Built-in preset list:\n\n${JSON.stringify(PresetLoader.List, null, 2)}\n\n` +
+                `Built-in preset list:\n\n${JSON.stringify(PresetLoader.List)}\n\n` +
                 `Preset 'general' is always loaded with choosen preset during prompt generation.` +
                 `\n`
             );

@@ -2,28 +2,16 @@
 
 import CommanderWrapper, { ScopedRegisterOptionCallback } from 'commanderwrapper';
 
-import * as Consts from '@/src/global/consts.js';
-
 import Logger from '@/src/Logger.js';
 
-import CommandGeneric from "./commands/Generic.js";
-import CommandInit from "./commands/Init/index.js";
-import CommandGenerate from "./commands/Generate/index.js";
-import CommandPreset from "./commands/Preset/index.js";
-import CommandTemplate from "./commands/Template/index.js";
-import CommandVersion from "./commands/Version/index.js";
+import CommandGeneric from "@/src/commands/Generic.js";
+import CommandInit from "@/src/commands/list/Init/index.js";
+import CommandGenerate from "@/src/commands/list/Generate/index.js";
+import CommandPreset from "@/src/commands/list/Preset/index.js";
+import CommandVersion from "@/src/commands/list/Version/index.js";
 
-
-import DirConfigHandler from './DirConfigHandler.js';
 import PresetLoader from './PresetLoader.js';
-import SettingsHandler, { SettingsOptions } from './SettingsHandler.js';
 
-//
-
-export interface Options extends Partial<SettingsOptions> {
-	settings: string;
-	store: boolean;
-}
 
 //
 
@@ -35,7 +23,6 @@ export default class PPLLM {
 		this.CommandsSet.add(CommandInit);
 		this.CommandsSet.add(CommandGenerate);
 		this.CommandsSet.add(CommandPreset);
-		this.CommandsSet.add(CommandTemplate);
 		this.CommandsSet.add(CommandVersion);
 	}
 
@@ -43,13 +30,7 @@ export default class PPLLM {
 
 	readonly logger = new Logger(this);
 
-	readonly dirConfigHandler: DirConfigHandler;
-
 	readonly cmderw: CommanderWrapper;
-
-	readonly o: Options;
-
-	readonly settingsHandler: SettingsHandler;
 
 	private command?: CommandGeneric;
 
@@ -58,28 +39,11 @@ export default class PPLLM {
 	//
 
 	constructor() {
-		this.dirConfigHandler = new DirConfigHandler(this);
-
-		//
-
 		this.cmderw = new CommanderWrapper();
 
 		this.initCommands();
 
 		this.cmderw.parse();
-
-		//
-
-		this.o = this.cmderw.getOptions();
-
-		//
-
-		this.settingsHandler = new SettingsHandler(this);
-
-		//
-
-		if (this.o.store)
-			this.settingsHandler.storeUserSettings();
 
 		//
 
@@ -108,8 +72,6 @@ export default class PPLLM {
 					arguments: ClassOfCommand.Arguments(),
 				},
 				(option) => {
-					this.registerOptions(option);
-					SettingsHandler.RegisterOptions(option);
 					ClassOfCommand.Options(option, this);
 				}
 			);
@@ -120,29 +82,6 @@ export default class PPLLM {
 
 	async start() {
 		await this.command?.start();
-	}
-
-	//
-
-	private registerOptions(option: ScopedRegisterOptionCallback) {
-		option(
-			{ groupName: "general" },
-			{
-				flags: '-S, --settings <filename>',
-				description: 'Name of the settings file.',
-				defaultValue: Consts.DEFAULT_SETTINGS_FILENAME,
-
-				validation: [{ pattern: Consts.REGEXP_FILENAME, description: "filename string" }],
-			}
-		);
-		option(
-			{ groupName: "general" },
-			{
-				flags: '-s, --store',
-				description: 'Store used settings into file in cwd.',
-				defaultValue: false,
-			}
-		);
 	}
 }
 
