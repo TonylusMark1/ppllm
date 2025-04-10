@@ -6,6 +6,8 @@ dist/
 .DS_Store
 Thumbs.db
 
+# Configs
+ppllm.config.json
+
 # Output file
 ppllm.prompt.txt
-ppllm.settings.json

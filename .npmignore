@@ -7,9 +7,9 @@ Thumbs.db
 
 # Configs
 tsup.config.ts
+ppllm.config.json
 
 # Output file
-ppllm.config.json
 ppllm.prompt.txt
 
 # Exclude files and folder to leave only essential files
