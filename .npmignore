@@ -1,0 +1,13 @@
+# System-generated files
+.DS_Store
+Thumbs.db
+
+# Exclude files and folder to leave only essential files
+.git
+.vscode
+public
+src
+CHANGELOG.md
+TODO
+tsconfig.json
+tsup.config.ts

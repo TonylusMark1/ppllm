@@ -1,0 +1,22 @@
+[Wpisz tutaj swój prompt]
+
+=== Struktura plików projektu ===
+
+{{fileTree}}
+
+=== Zawartość plików ===
+
+{{#each files}}
+Plik: {{path}}
+════════════════════════════════════════
+{{#if exception}}
+[{{{content}}}]
+{{else}}
+```
+{{{content}}}
+```
+{{/if}}
+{{#unless @last}}
+
+{{/unless}}
+{{/each}}

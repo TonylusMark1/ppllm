@@ -1,0 +1,22 @@
+[Enter your prompt here]
+
+=== Project File Structure ===
+
+{{fileTree}}
+
+=== File Contents ===
+
+{{#each files}}
+File: {{path}}
+════════════════════════════════════════
+{{#if exception}}
+[{{{content}}}]
+{{else}}
+```
+{{{content}}}
+```
+{{/if}}
+{{#unless @last}}
+
+{{/unless}}
+{{/each}}

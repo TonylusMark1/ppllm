@@ -1,0 +1,21 @@
+{
+    "ignore": [
+        "**/.git",
+        "**/.vscode",
+        "**/.DS_Store",
+        "**/Thumbs.db",
+        "**/desktop.ini",
+        "**/.Spotlight-V100",
+        "**/.Trashes",
+        "**/.TemporaryItems",
+        "**/.fseventsd",
+        "**/.DocumentRevisions-V100",
+        "**/.AppleDouble",
+        "**/.VolumeIcon.icns",
+        "**/.com.apple.timemachine.donotpresent",
+        "**/.cache",
+        "**/lost+found",
+        "**/ehthumbs.db",
+        "**/System Volume Information"
+    ]
+}

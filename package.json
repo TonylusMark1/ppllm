@@ -1,0 +1,42 @@
+{
+  "name": "ppllm",
+  "version": "1.3.6",
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": {
+    "ppllm": "./dist/index.js"
+  },
+  "author": "tonylus",
+  "license": "ISC",
+  "repository": "https://github.com/TonylusMark1/ppllm",
+  "keywords": [
+    "llm",
+    "prompt",
+    "ai",
+    "vibecoding"
+  ],
+  "description": "Generate prompt of your project",
+  "dependencies": {
+    "colorette": "^2.0.20",
+    "commanderwrapper": "^0.0.8",
+    "fast-glob": "^3.3.3",
+    "file-type": "^20.4.1",
+    "handlebars": "^4.7.8",
+    "inquirer": "^9.3.7",
+    "inquirer-autocomplete-prompt": "^3.0.1",
+    "isbinaryfile": "^5.0.4",
+    "slash": "^5.1.0",
+    "string-width": "^7.2.0"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^9.0.7",
+    "@types/inquirer-autocomplete-prompt": "^3.0.3",
+    "@types/node": "^22.14.0",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.2"
+  },
+  "scripts": {
+    "build": "tsup",
+    "prepare": "npm run build"
+  }
+}
