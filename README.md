@@ -188,6 +188,7 @@ ppllm -f magic.prompt.txt
 
 | Flag                          | Description                                 | Default value |
 | ----------------------------- | ------------------------------------------- | ------------- |
+| `-d, --dir <dir>`              | Source project directory                    | `.`           |
 | `-t, --template <template>`    | Handlebars template for prompt generation   | `eng`         |
 | `-f, --file <filename>`        | Name of the output file                    | `ppllm.prompt.txt` |
 | `-p, --preset <preset>`        | Preset of ignored files/folders            | `disable`     |
@@ -200,7 +201,6 @@ ppllm -f magic.prompt.txt
 
 | Flag                          | Description                                 | Default value |
 | ----------------------------- | ------------------------------------------- | ------------- |
-| `-d, --dir <dir>`              | Source project directory                    | `.`           |
 | `-o, --output <mode>`          | Output: `stdout` or `file`                  | `file`        |
 | `-c, --config <filename>`      | Name of the config file                     | `ppllm.config.json` |
 

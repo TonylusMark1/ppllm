@@ -19,6 +19,7 @@ export default class Templates {
     static {
         this.List = (() => {
             const files = fs.readdirSync(this.DIRECTORY);
+            
             return files
                 .filter(f => f.endsWith(this.SUFFIX))
                 .map(f => f.split('.')[0]); // eng.prompt.hbs → eng

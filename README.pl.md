@@ -187,6 +187,7 @@ ppllm -f magic.prompt.txt
 
 | Flaga                          | Opis                                        | Domyślna wartość |
 | ----------------------------- | ------------------------------------------- | ---------------- |
+| `-d, --dir <dir>`              | Katalog źródłowy projektu                   | `.`              |
 | `-t, --template <template>`    | Szablon Handlebars do generowania promptu   | `eng`            |
 | `-f, --file <filename>`        | Nazwa pliku wynikowego                     | `ppllm.prompt.txt` |
 | `-p, --preset <preset>`        | Preset ignorowanych plików/folderów         | `disable`        |
@@ -199,7 +200,6 @@ ppllm -f magic.prompt.txt
 
 | Flaga                          | Opis                                        | Domyślna wartość |
 | ----------------------------- | ------------------------------------------- | ---------------- |
-| `-d, --dir <dir>`              | Katalog źródłowy projektu                   | `.`              |
 | `-o, --output <mode>`          | Wyjście: `stdout` lub `file`                | `file`           |
 | `-c, --config <filename>`      | Nazwa pliku konfiguracyjnego                | `ppllm.config.json` |
 
