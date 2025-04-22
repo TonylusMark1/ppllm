@@ -54,6 +54,7 @@ export default class CommandPreset extends CommandGeneric {
                 //
 
                 this.ppllm.logger.logBoxedMessage( `Built-in '${presetName}' preset:`);
+                this.ppllm.logger.logEmptyLine();
 
                 this.ppllm.logger.log(JSON.stringify(preset, undefined, 2) + "\n");
             }
@@ -63,11 +64,10 @@ export default class CommandPreset extends CommandGeneric {
         }
         else {
             this.ppllm.logger.logBoxedMessage(`🧾 Built-in preset list:`);
-
-            this.ppllm.logger.log(`${JSON.stringify(PresetLoader.List)}\n\n` +
-                `Preset 'general' is always loaded with choosen preset during prompt generation.` +
-                `\n`
-            );
+            this.ppllm.logger.logEmptyLine();
+            
+            this.ppllm.logger.log(`${JSON.stringify(PresetLoader.List)}`);
+            this.ppllm.logger.logEmptyLine();
         }
     }
 }

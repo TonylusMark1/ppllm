@@ -73,7 +73,8 @@ export default class CommandInit extends CommandGeneric<Options> {
 
     async start() {
         this.ppllm.logger.logBoxedMessage(`${Emoji.General.Working} Initializing settings...`);
-        
+        this.ppllm.logger.logEmptyLine();
+
         //
 
         const promptedSettings: Partial<SettingsOptions> = {};
@@ -248,7 +249,7 @@ export default class CommandInit extends CommandGeneric<Options> {
         //
 
         const answer = await CLIPrompting.PromptMultipleChoiceInput(
-            `🧾 ` + colorette.underline(`Preset(s) to skip common files and folders`),
+            `🧾 ` + colorette.underline(`Preset(s) for skipping common files and folders`),
             choices,
             {
                 defaultValue: this.config.fromFileSettings["preset"] ?? Defaults["preset"]
