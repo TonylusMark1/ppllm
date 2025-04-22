@@ -1,4 +1,4 @@
-import {ScopedRegisterOptionCallback, CommandArgument} from 'commanderwrapper';
+import {ScopedRegisterOptionCallback, CommandPositionalArgumentConfig} from 'commanderwrapper';
 
 import type PPLLM from '@/src/index.js';
 
@@ -13,7 +13,7 @@ export default class CommandGeneric<Options extends Record<string, any> = Record
         throw new Error(`Command class ${this.name} hasn't Description overloaded.`);
     }
 
-    static Arguments(): CommandArgument[] {
+    static Arguments(): CommandPositionalArgumentConfig[] {
         return [];
     }
 

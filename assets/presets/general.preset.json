@@ -1,5 +1,6 @@
 {
     "ignore": [
+        "dist",
         "**/.git",
         "**/.vscode",
         "**/.DS_Store",

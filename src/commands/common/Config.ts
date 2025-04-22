@@ -24,7 +24,7 @@ export interface SettingsOptions {
     dir: string;
     template: string;
     file: string;
-    preset: "disable" | (string & {});
+    preset: string[];
     maxSize: "disable" | (string & {});
     binary: typeof Validations["binary"][number];
     emoji: boolean;
@@ -34,11 +34,11 @@ export interface SettingsOptions {
 
 export const BinaryModes = ["tree", "all", "none"] as const;
 
-export const Defaults = {
+export const Defaults: SettingsOptions = {
     "dir": "./",
     "template": Templates.Default,
     "file": Consts.DEFAULT_OUTPUT_FILENAME,
-    "preset": "disable" satisfies "disable" | (string & {}),
+    "preset": [],
     "maxSize": "disable" satisfies "disable" | (string & {}),
     "binary": "tree" satisfies typeof BinaryModes[number],
     "emoji": false
@@ -48,7 +48,7 @@ export const Validations = {
     "dir": [{ pattern: Consts.REGEXP_DIRECTORY_PATH, description: "directory path" }],
     "template": [...Templates.List, { pattern: Consts.REGEXP_FILENAME, description: "filename string" }],
     "file": [{ pattern: Consts.REGEXP_FILENAME, description: "filename string" }],
-    "preset": ["disable", ...PresetLoader.List],
+    "preset": PresetLoader.List,
     "maxSize": ["disable", { pattern: /^[0-9]+(KB|MB|GB)$/i, description: "e.g. 100KB, 5MB, 1GB" }],
     "binary": [...BinaryModes],
 };
@@ -58,8 +58,9 @@ export const Validations = {
 export default class Config {
     static RegisterSettingsOptions(option: ScopedRegisterOptionCallback) {
         option(
-            { groupName: "settings" },
             {
+                groupName: "settings",
+
                 flags: '-d, --dir <dir>',
                 description: 'Source directory to scan.',
                 defaultValue: Defaults["dir"],
@@ -68,8 +69,9 @@ export default class Config {
             }
         );
         option(
-            { groupName: "settings" },
             {
+                groupName: "settings",
+
                 flags: '-t, --template <template>',
                 description: `Handlebars template used to generate prompt.`,
                 defaultValue: Defaults["template"],
@@ -78,8 +80,9 @@ export default class Config {
             }
         );
         option(
-            { groupName: "settings" },
             {
+                groupName: "settings",
+
                 flags: '-f, --file <filename>',
                 description: `Filename for output file.`,
                 defaultValue: Defaults["file"],
@@ -88,9 +91,10 @@ export default class Config {
             }
         );
         option(
-            { groupName: "settings" },
             {
-                flags: '-p, --preset <preset>',
+                groupName: "settings",
+
+                flags: '-p, --preset <preset...>',
                 description: 'Preset of ignore list to use',
                 defaultValue: Defaults["preset"],
 
@@ -99,8 +103,9 @@ export default class Config {
             }
         );
         option(
-            { groupName: "settings" },
             {
+                groupName: "settings",
+
                 flags: '-m, --max-size <size>',
                 description: 'Set maximum file size to load.',
                 defaultValue: Defaults["maxSize"],
@@ -110,8 +115,9 @@ export default class Config {
             }
         );
         option(
-            { groupName: "settings" },
             {
+                groupName: "settings",
+
                 flags: '-b, --binary <mode>',
                 description: `Binary file mode.`,
                 defaultValue: Defaults["binary"],
@@ -121,8 +127,9 @@ export default class Config {
             }
         );
         option(
-            { groupName: "settings" },
             {
+                groupName: "settings",
+
                 flags: '-e, --emoji',
                 description: `Render emoji in prompt and messages.`,
                 defaultValue: Defaults["emoji"],
@@ -247,8 +254,8 @@ export default class Config {
 
                 const valFromCliUserProvided = (fromCLI_userProvidedSettings as any)[key];
 
-                const valid = this.parent.ppllm.cmderw.isOptionValueValid(key, val);
-                const validFromCliUserProvided = this.parent.ppllm.cmderw.isOptionValueValid(key, valFromCliUserProvided);
+                const valid = this.parent.ppllm.cmderw.isOptionAssigneValid(key, val);
+                const validFromCliUserProvided = valFromCliUserProvided && this.parent.ppllm.cmderw.isOptionAssigneValid(key, valFromCliUserProvided);
 
                 if (valid === false && !validFromCliUserProvided) {
                     this.parent.ppllm.logger.error(Emoji.General.Error, `Invalid setting value in config file, Key '${key}' can't be ${JSON.stringify(val)}.`);
@@ -267,9 +274,8 @@ export default class Config {
     }
 
     storeSettings(settings: Partial<SettingsOptions>) {
-        if ( !Object.keys(settings).length ) {
+        if ( !Object.keys(settings).length )
             return;
-        }
 
         //
 

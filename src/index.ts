@@ -67,9 +67,9 @@ export default class PPLLM {
 	private initCommands() {
 		PPLLM.CommandsSet.forEach(ClassOfCommand => {
 			this.cmderw.registerCommand(
-				ClassOfCommand.Name,
-				ClassOfCommand.Description,
 				{
+					name: ClassOfCommand.Name,
+					description: ClassOfCommand.Description,
 					isDefault: ClassOfCommand == PPLLM.DefaultCommand,
 					arguments: ClassOfCommand.Arguments(),
 				},

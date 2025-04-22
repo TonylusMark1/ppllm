@@ -3,7 +3,7 @@ import fs from "fs";
 
 import * as colorette from 'colorette';
 
-import { CommandArgument, ScopedRegisterOptionCallback } from 'commanderwrapper';
+import { ScopedRegisterOptionCallback } from 'commanderwrapper';
 
 import * as Consts from '@/src/global/consts.js';
 import * as Emoji from '@/src/global/emoji.js';
@@ -39,8 +39,9 @@ export default class CommandInit extends CommandGeneric<Options> {
 
     static Options(option: ScopedRegisterOptionCallback, ppllm: PPLLM): void {
         option(
-            { groupName: "general" },
             {
+                groupName: "general",
+
                 flags: '-c, --config <filename>',
                 description: 'Name of the config file.',
                 defaultValue: Consts.DEFAULT_CONFIG_FILENAME,
@@ -140,7 +141,7 @@ export default class CommandInit extends CommandGeneric<Options> {
             {
                 defaultValue: this.config.fromFileSettings["dir"] ?? Defaults["dir"],
                 validator: (input: string) => {
-                    if (this.ppllm.cmderw.testValidations(input, Validations["dir"]))
+                    if (this.ppllm.cmderw.isValueValid(input, Validations["dir"]))
                         return true;
     
                     return `Invalid directory path`;
@@ -187,7 +188,7 @@ export default class CommandInit extends CommandGeneric<Options> {
                     if ( !input || input.trim().length === 0 )
                         return `Filename can't be empty`;
     
-                    if (this.ppllm.cmderw.testValidations(input, Validations["template"])) {
+                    if (this.ppllm.cmderw.isValueValid(input, Validations["template"])) {
                         if ( Templates.List.includes(input) ) {
                             return true;
                         }
@@ -217,7 +218,7 @@ export default class CommandInit extends CommandGeneric<Options> {
             {
                 defaultValue: this.config.fromFileSettings["file"] ?? Defaults["file"],
                 validator: (input: string) => {
-                    if (this.ppllm.cmderw.testValidations(input, Validations["file"]))
+                    if (this.ppllm.cmderw.isValueValid(input, Validations["file"]))
                         return true;
     
                     return `Invalid filename`;
@@ -267,7 +268,7 @@ export default class CommandInit extends CommandGeneric<Options> {
             {
                 defaultValue: this.config.fromFileSettings["maxSize"] ?? Defaults["maxSize"],
                 validator: (input: string) => {
-                    if (this.ppllm.cmderw.testValidations(input, Validations["maxSize"]))
+                    if (this.ppllm.cmderw.isValueValid(input, Validations["maxSize"]))
                         return true;
     
                     return `Invalid value`;

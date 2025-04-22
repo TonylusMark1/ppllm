@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs";
 
-import { CommandArgument, ScopedRegisterOptionCallback } from 'commanderwrapper';
+import { CommandPositionalArgumentConfig } from 'commanderwrapper';
 
 import * as Emoji from '@/src/global/emoji.js';
 
@@ -28,7 +28,7 @@ export default class CommandTemplate extends CommandGeneric {
         return `Creates template (for custom prompt template) or config in current working directory.`;
     }
 
-    static Arguments(): CommandArgument[] {
+    static Arguments(): CommandPositionalArgumentConfig[] {
         return [
             {
                 name: "name",
@@ -36,7 +36,7 @@ export default class CommandTemplate extends CommandGeneric {
                 validation: [{pattern: /^[a-zA-Z0-9_\-]+$/, description: "Letter, digit, underscore and hypen only"}],
                 default: "custom",
             },
-        ] as CommandArgument[];
+        ];
     }
 
     //

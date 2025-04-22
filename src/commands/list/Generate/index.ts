@@ -38,8 +38,9 @@ export default class CommandGenerate extends CommandGeneric<Options> {
 
     static Options(option: ScopedRegisterOptionCallback, ppllm: PPLLM): void {
         option(
-            { groupName: "general" },
             {
+                groupName: "general",
+
                 flags: '-o, --output <mode>',
                 description: `Output mode, default is file.`,
                 defaultValue: 'file',
@@ -49,8 +50,9 @@ export default class CommandGenerate extends CommandGeneric<Options> {
             }
         );
         option(
-            { groupName: "general" },
             {
+                groupName: "general",
+
                 flags: '-c, --config <filename>',
                 description: 'Name of the config file.',
                 defaultValue: Consts.DEFAULT_CONFIG_FILENAME,
@@ -94,13 +96,8 @@ export default class CommandGenerate extends CommandGeneric<Options> {
 
         //
 
-        const preset = (
-            this.config.settings.preset != "disable"
-                ?
-                this.ppllm.presetLoader.loadPreset(this.config.settings.preset)
-                :
-                undefined
-        );
+        const presets = this.config.settings.preset.map(p => this.ppllm.presetLoader.loadPreset(p));
+        const presetsIgnores = Array.from(new Set(presets.map(p => p.ignore).flat()));
         
         //
        
@@ -108,7 +105,7 @@ export default class CommandGenerate extends CommandGeneric<Options> {
 
         //
 
-        this.ignore = [...coreIgnores, ...(preset?.ignore ?? []), ...this.config.ignore];
+        this.ignore = [...coreIgnores, ...presetsIgnores, ...this.config.ignore];
 
         //
 

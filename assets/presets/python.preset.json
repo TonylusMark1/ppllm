@@ -1,5 +1,4 @@
 {
-	"extends": "general",
 	"ignore": [
 		"**/__pycache__",
 		"**/*.pyc",

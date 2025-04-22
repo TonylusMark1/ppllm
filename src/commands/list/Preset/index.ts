@@ -1,4 +1,4 @@
-import { CommandArgument } from 'commanderwrapper';
+import { CommandPositionalArgumentConfig } from 'commanderwrapper';
 
 import * as Emoji from '@/src/global/emoji.js';
 
@@ -24,7 +24,7 @@ export default class CommandPreset extends CommandGeneric {
         return 'Prints built-in preset list or content of choosen preset.';
     }
 
-    static Arguments(): CommandArgument[] {
+    static Arguments(): CommandPositionalArgumentConfig[] {
         return [
             {
                 name: "name",
