@@ -114,7 +114,7 @@ Example configuration file content:
   "settings": {
     "template": "pl",
     "file": "ppllm.prompt.txt",
-    "preset": "nodejs",
+    "preset": ["general", "nodejs"],
     "maxSize": "10KB",
     "binary": "tree",
     "emoji": true
@@ -151,8 +151,9 @@ ppllm -t pl
 ## 🗂️ Presets
 
 Presets are ready-made lists of files and folders to be skipped during prompt generation.  
-The project includes built-in presets for popular technologies such as:
+The project includes built-in presets, general one and for popular technologies:
 
+- `general`
 - `nodejs`
 - `python`
 
@@ -166,10 +167,10 @@ Presets **are not user-expandable**, but you can add your own ignore rules in th
 
 ## 🎯 Usage Examples
 
-Generate a prompt using the `nodejs` preset and emojis:
+Generate a prompt using the `general` and `nodejs` presets and emojis:
 
 ```bash
-ppllm -p nodejs -e
+ppllm -p general nodejs -e
 ```
 
 Use your custom template:
@@ -191,7 +192,7 @@ ppllm -f magic.prompt.txt
 | `-d, --dir <dir>`              | Source project directory                    | `.`           |
 | `-t, --template <template>`    | Handlebars template for prompt generation   | `eng`         |
 | `-f, --file <filename>`        | Name of the output file                    | `ppllm.prompt.txt` |
-| `-p, --preset <preset>`        | Preset of ignored files/folders            | `disable`     |
+| `-p, --preset <preset...>`     | Preset(s) of ignored files/folders         | []            |
 | `-m, --max-size <size>`        | Max file size (e.g., 10MB, 5KB)            | `disable`     |
 | `-b, --binary <mode>`          | Binary handling mode (`tree`, `all`, `none`) | `tree`        |
 | `-e, --emoji`                  | Add emojis to prompts                      | `false`       |

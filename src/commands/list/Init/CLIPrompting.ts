@@ -89,6 +89,22 @@ export default class CLIPrompting {
         return input;
     }
 
+    static async PromptMultipleChoiceInput(message: string, choices: CLIPromptingInputChoice[], options?: CLIPromptingOptions) {
+        const { input } = await inquirer.prompt([
+            {
+                prefix: "",
+                type: 'checkbox',
+                name: 'input',
+                message: message,
+                choices: this.MapChoices(choices),
+                pageSize: Math.max(Math.min(10, choices.length), 5),
+                default: options?.defaultValue
+            },
+        ]);
+    
+        return input;
+    }
+
     static async PromptChoiceWithCustomInput(message: string, choices: CLIPromptingInputChoice[], options?: CLIPromptingListWithInputOptions) {
         const mappedChoices = this.MapChoices(choices)
 

@@ -245,12 +245,10 @@ export default class CommandInit extends CommandGeneric<Options> {
             return c;
         });
 
-        this.setMarking(choices, "preset");
-
         //
 
-        const answer = await CLIPrompting.PromptChoiceInput(
-            `🧾 ` + colorette.underline(`Preset to skip common files and folders`),
+        const answer = await CLIPrompting.PromptMultipleChoiceInput(
+            `🧾 ` + colorette.underline(`Preset(s) to skip common files and folders`),
             choices,
             {
                 defaultValue: this.config.fromFileSettings["preset"] ?? Defaults["preset"]

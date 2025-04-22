@@ -113,7 +113,7 @@ Przykładowa zawartość pliku konfiguracyjnego:
   "settings": {
     "template": "pl",
     "file": "ppllm.prompt.txt",
-    "preset": "nodejs",
+    "preset": ["general", "nodejs"],
     "maxSize": "10KB",
     "binary": "tree",
     "emoji": true
@@ -150,8 +150,9 @@ ppllm -t pl
 ## 🗂️ Presety
 
 Presety to gotowe listy plików i folderów, które mają być pomijane podczas generowania promptu.  
-Projekt posiada wbudowane presety dla popularnych technologii, takich jak:
+Projekt posiada wbudowane presety jeden generalny oraz dla popularnych technologii:
 
+- `general`
 - `nodejs`
 - `python`
 
@@ -190,7 +191,7 @@ ppllm -f magic.prompt.txt
 | `-d, --dir <dir>`              | Katalog źródłowy projektu                   | `.`              |
 | `-t, --template <template>`    | Szablon Handlebars do generowania promptu   | `eng`            |
 | `-f, --file <filename>`        | Nazwa pliku wynikowego                     | `ppllm.prompt.txt` |
-| `-p, --preset <preset>`        | Preset ignorowanych plików/folderów         | `disable`        |
+| `-p, --preset <preset...>`     | Preset(y) ignorowanych plików/folderów      | []               |
 | `-m, --max-size <size>`        | Maksymalny rozmiar pliku (np. 10MB, 5KB)    | `disable`        |
 | `-b, --binary <mode>`          | Tryb obsługi binarek (`tree`, `all`, `none`) | `tree`           |
 | `-e, --emoji`                  | Czy dodawać emoji do promptów               | `false`          |
