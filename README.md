@@ -48,7 +48,7 @@ Recommended installation with the `-g` flag for global access to the `ppllm` com
 ```bash
 npm install -g ppllm
 ```
-or
+
 ```bash
 npm install ppllm
 ```
@@ -71,7 +71,7 @@ This way, you'll tell `ppllm` to use the built-in preset with ignored paths typi
 
 ## 🧠 Advanced Usage
 
-Interactive configuration wizard:
+Interactive configuration wizard. You’ll be also asked whether you want to clone the default prompt template locally and use it as default:
 ```bash
 ppllm init
 ```
@@ -80,12 +80,6 @@ List available presets or view a selected one:
 ```bash
 ppllm preset
 ppllm preset python
-```
-
-Clone the default English template for generating prompts (`handlebars`) to your current location and set its filename as [name].prompt.hbs (`custom` if omitted):
-```bash
-ppllm template
-ppllm template name
 ```
 
 Check your current version of ppllm:
@@ -102,7 +96,7 @@ ppllm generate --help
 
 ## 🛠️ Configuration
 
-Settings can be saved in a local file (default: `ppllm.config.json`).
+Settings will be saved in a local file (default: `ppllm.config.json`).
 
 The CLI automatically saves them after using the interactive wizard (`ppllm init`) or when specifying options during prompt generation, e.g.: `ppllm -p nodejs -b all`
 In the config file, you'll also find a place for your own list of ignored files and folders `"ignore"` (use `glob` format), which will of course merge with the selected preset.
@@ -120,25 +114,19 @@ Example configuration file content:
     "emoji": true
   },
   "ignore": [
-    "TODO"
+    "dist"
   ]
 }
 ```
 
 ## 🧩 Templates
 
-The prompt is generated based on a Handlebars template (`.hbs`). By default, the built-in English template `eng` is used, but other built-in templates are also available. You can also specify your own template by providing its full filename.
+The prompt is generated based on a Handlebars template (`.hbs`). By default, the built-in English template `eng` is used, but other built-in templates are also available. To use your own template, first clone the default template during `init` command.
 
-To use your own template, first clone the default English template:
-
-```bash
-ppllm template custom
-```
-
-Then specify its usage in the configuration or through CLI:
+To specify anytime which template should be used, either update the value in the configuration file, set it during initialization, or use the `--template`/`-t` option when generating the prompt:
 
 ```bash
-ppllm -t custom.prompt.hbs
+ppllm -t ppllm.prompt.hbs
 ```
 
 To revert to one of the defaults, run one of the following commands:
@@ -159,11 +147,11 @@ The project includes built-in presets, general one and for popular technologies:
 
 Presets **are not user-expandable**, but you can add your own ignore rules in the config file.
 
-## 📝 Advanced Features
+## 📝 Other Features
 
-- Support for binary files in three modes: `tree`, `all`, `none`
-- Limit file size (`--max-size`) for content loading
-- Optional emojis in prompts 🎉
+- Support for binary files in three modes: `tree`, `all`, `none`.
+- Limit file size (`--max-size`) for content loading.
+- Optional emojis in prompts 🎉.
 
 ## 🎯 Usage Examples
 
@@ -171,12 +159,6 @@ Generate a prompt using the `general` and `nodejs` presets and emojis:
 
 ```bash
 ppllm -p general nodejs -e
-```
-
-Use your custom template:
-
-```bash
-ppllm -t myTemplate.prompt.hbs
 ```
 
 Export to a file with a custom name:
@@ -189,7 +171,7 @@ ppllm -f magic.prompt.txt
 
 | Flag                          | Description                                 | Default value |
 | ----------------------------- | ------------------------------------------- | ------------- |
-| `-d, --dir <dir>`              | Source project directory                    | `.`           |
+| `-d, --dir <dir>`              | Source project directory (cwd related)      | `.`           |
 | `-t, --template <template>`    | Handlebars template for prompt generation   | `eng`         |
 | `-f, --file <filename>`        | Name of the output file                    | `ppllm.prompt.txt` |
 | `-p, --preset <preset...>`     | Preset(s) of ignored files/folders         | []            |

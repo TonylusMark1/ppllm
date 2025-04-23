@@ -1,3 +1,4 @@
+
 <table>
 <tr>
 <td>
@@ -11,8 +12,8 @@
 
 ![npm](https://img.shields.io/npm/v/ppllm) ![npm downloads](https://img.shields.io/npm/dm/ppllm) ![license](https://img.shields.io/npm/l/ppllm)
 
-Twój asystent do generowania promptów na bazie struktury projektu! 🚀  
-Prosty, wygodny, konfigurowalny — wystarczy jednowyrazowe polecenie, by wygenerować czytelny prompt z drzewem plików i zawartością Twojego projektu.
+Twój asystent do generowania promptów na podstawie struktury projektu! 🚀  
+Prosto, wygodnie, konfigurowalnie — jedno polecenie wystarczy, by wygenerować czytelny prompt z drzewem plików i ich zawartością.
 
 <table>
 <tr>
@@ -22,12 +23,12 @@ Prosty, wygodny, konfigurowalny — wystarczy jednowyrazowe polecenie, by wygene
 </tr>
 </table>
 
-Aby gotowy prompt wylądował w pliku w miejscu, gdzie jesteś, po prostu odpal:
+Aby zapisać wygenerowany prompt do pliku w bieżącym katalogu, uruchom:
 ```bash
 ppllm
 ```
 
-Wynikowy prompt w domyślnym pliku `ppllm.prompt.txt` będzie wyglądał w ten sposób:<br />
+Prompt zapisany domyślnie w pliku `ppllm.prompt.txt` będzie wyglądał następująco:<br />
 <table>
 <tr>
 <td>
@@ -39,55 +40,48 @@ Wynikowy prompt w domyślnym pliku `ppllm.prompt.txt` będzie wyglądał w ten s
 
 ## 🌟 Czym jest PPLLM?
 
-**ProjectPromptLLM** (`ppllm`) to narzędzie CLI, które tworzy prompt na podstawie struktury i zawartości plików projektu. Prompt ten następnie można użyć z ChatGPT lub innym LLM w celach badawczych lub rozwojowych. Obsługuje presety ignorowanych plików i folderów, rozbudowaną konfigurację oraz własne szablony.
+**ProjectPromptLLM** (`ppllm`) to narzędzie CLI, które tworzy prompt na podstawie struktury i zawartości plików projektu. Można go użyć w ChatGPT lub innym LLM. Zawiera predefiniowane zbiory ignorowanych plików, konfigurację i szablony.
 
 ## 💾 Instalacja
 
-Zalecana instalacja z flagą `-g` w celu globalnego dostępu do komendy `ppllm` bez konieczności używania `npx`
+Zalecana instalacja globalna (w celu używania bez pośredniej komendy `npx`):
 ```bash
 npm install -g ppllm
 ```
-lub
+lub lokalnie (używaj `npx ppllm` w katalogu gdzie `ppllm` jest zainstalowany):
 ```bash
 npm install ppllm
 ```
 
 ## 🚀 Podstawowe użycie
 
-Najprostsze użycie:
 ```bash
 ppllm
 ```
-Po wykonaniu tej komendy skanowany jest obecny katalog, a następnie gotowy prompt zapisuje się do pliku (domyślnie `ppllm.prompt.txt`)
+Po uruchomieniu tej komendy bieżący katalog jest skanowany, a wygenerowany prompt zapisywany jest do pliku (domyślnie: `ppllm.prompt.txt`).
 
-Może się okazać że w prompcie umieszczone zostały pliki, które nie miały się tam znaleźć, np. z `node_modules` których może być bardzo dużo, przez co wynikowy wielki prompt będzie niepraktyczny. By temu zapobiec użyj (tylko raz) komendy:
+Może się zdarzyć, że w zawartości promptu znajdą się niechciane pliki, takie jak te z `node_modules`, które mogą być bardzo duże i sprawić, że prompt stanie się niepraktyczny. Aby tego uniknąć, uruchom tę komendę raz:
 
 ```bash
 ppllm -p nodejs
 ```
 
-W ten sposób wskażesz `ppllm` aby użył wbudowanego presetu z listą ignorowanych ścieżek charakterystycznych dla projektu `node.js`. Skrypt również zapisze od razu te decyzje do pliku konfiguracyjnego (domyślnie `ppllm.config.json`) w obecnej lokalizacji, dzięki czemu od następnej komendy możesz już spowrotem używać krótkiej komendy `ppllm` bez dodatkowych parametrów.
+W ten sposób poinstruujesz `ppllm`, aby używał wbudowanego presetu z ścieżkami do ignorowania typowymi dla projektu `node.js`. Skrypt zapisze również tę decyzję w pliku konfiguracyjnym (domyślnie: `ppllm.config.json`) w bieżącej lokalizacji, dzięki czemu następnym razem możesz po prostu użyć `ppllm` bez dodatkowych parametrów.
 
-## 🧠 Rozszerzone użycie
+## 🧠 Zaawansowane użycie
 
-Interaktywny kreator konfiguracji:
+Kreator konfiguracji:
 ```bash
 ppllm init
 ```
 
-Lista dostępnych presetów lub zawartość wybranego:
+Lista presetów lub ich podgląd:
 ```bash
 ppllm preset
 ppllm preset python
 ```
 
-Sklonowanie do obecnej lokalizacji domyślnego angielskiego szablonu do generowania promptu (`handlebars`) i ustawienie jego nazwy w nazwie pliku [nazwa].prompt.hbs (`custom` jeśli pominięte):
-```bash
-ppllm template
-ppllm template nazwa
-```
-
-Obecna wersja Twojego ppllm:
+Sprawdzenie wersji:
 ```bash
 ppllm version
 ```
@@ -101,13 +95,12 @@ ppllm generate --help
 
 ## 🛠️ Konfiguracja
 
-Ustawienia możesz zapisać w lokalnym pliku (domyślnie: `ppllm.config.json`).
+Ustawienia zapisywane są w lokalnym pliku (domyślnie: `ppllm.config.json`).
 
-CLI zapisuje je automatycznie po użyciu interaktywnego kreatora (`ppllm init`) lub przy podaniu opcji podczas generowania promptu, np.: `ppllm -p nodejs -b all`
-W pliku konfiguracyjnym znajdziesz też miejsce na Twoją własną listę ignorowanych plików i folderów `"ignore"` (użyj formatu `glob`), która oczywiście łączy się z wybranym presetem.
+CLI automatycznie zapisuje ustawienia po użyciu interaktywnego kreatora (`ppllm init`) lub podczas generowania promptu z określonymi opcjami, np.: `ppllm -p nodejs -b all`.  
+W pliku konfiguracyjnym znajdziesz również miejsce na własną listę ignorowanych plików i folderów `"ignore"` (w formacie `glob`), która zostanie połączona z wybranym presetem.
 
 Przykładowa zawartość pliku konfiguracyjnego:
-
 ```json
 {
   "settings": {
@@ -119,28 +112,22 @@ Przykładowa zawartość pliku konfiguracyjnego:
     "emoji": true
   },
   "ignore": [
-    "TODO"
+    "dist"
   ]
 }
 ```
 
-## 🧩 Template'y
+## 🧩 Szablony
 
-Prompt jest generowany na podstawie szablonu Handlebars (`.hbs`). Domyślnie używany jest wbudowany szablon angielski `eng`, ale dostępne są też inne wbudowane szablony. Możliwe jest również wskazanie swojego własnego szablonu poprzez podanie jego pełnej nazwy pliku.
+Generowanie promptu odbywa się na podstawie szablonu Handlebars (`.hbs`). Domyślnie używany jest wbudowany angielski szablon `eng`, ale dostępne są również inne wbudowane szablony. Aby użyć własnego szablonu, najpierw sklonuj domyślny szablon za pomocą polecenia `init`.
 
-Aby użyc własny szablon, najpierw sklonuj domyślny wbudowany szablon angielski:
-
-```bash
-ppllm template custom
-```
-
-A następnie wskaż jego użycie w konfiguracji lub przez CLI:
+Aby określić, który szablon ma być używany, możesz zaktualizować wartość w pliku konfiguracyjnym, ustawić ją podczas inicjalizacji lub skorzystać z opcji `--template`/`-t` podczas generowania promptu:
 
 ```bash
-ppllm -t custom.prompt.hbs
+ppllm -t ppllm.prompt.hbs
 ```
 
-Natomiast aby wrócić do jednego z domyślnych, uruchom jedno z komend poniżej:
+Aby powrócić do jednego z domyślnych ustawień, uruchom jedną z poniższych komend:
 
 ```bash
 ppllm -t eng
@@ -149,60 +136,49 @@ ppllm -t pl
 
 ## 🗂️ Presety
 
-Presety to gotowe listy plików i folderów, które mają być pomijane podczas generowania promptu.  
-Projekt posiada wbudowane presety jeden generalny oraz dla popularnych technologii:
+Presety to gotowe listy plików i folderów, które są pomijane podczas generowania promptu.  
+Projekt zawiera wbudowane presety, ogólny oraz dla popularnych technologii:
 
 - `general`
 - `nodejs`
 - `python`
 
-Presety **nie są rozszerzalne przez użytkownika**, ale można dodać własne reguły ignorowania w pliku konfiguracyjnym.
+Presety **nie mogą być rozszerzane przez użytkownika**, ale możesz dodać własne reguły ignorowania w pliku konfiguracyjnym.
 
-## 📝 Zaawansowane możliwości
+## 📝 Inne funkcje
 
-- Obsługa plików binarnych w trzech trybach: `tree`, `all`, `none`
-- Ograniczenie rozmiaru plików (`--max-size`) do ładowania zawartości
-- Opcjonalne emoji w promptach 🎉
+- Obsługa plików binarnych w trzech trybach: `tree`, `all`, `none`.
+- Ograniczenie rozmiaru plików (`--max-size`) dla ładowania zawartości.
+- Opcjonalne emoji w promptach 🎉.
 
 ## 🎯 Przykłady użycia
 
-Generowanie promptu z użyciem presetu `nodejs` i emoji:
-
 ```bash
-ppllm -p nodejs -e
+ppllm -p general nodejs -e
 ```
-
-Użycie własnego szablonu:
-
-```bash
-ppllm -t myTemplate.prompt.hbs
-```
-
-Eksport do pliku o niestandardowej nazwie:
 
 ```bash
 ppllm -f magic.prompt.txt
 ```
 
-## ⚙️ Opcje CLI (które zapisują się do konfiguracji)
+## ⚙️ Opcje CLI
 
-| Flaga                          | Opis                                        | Domyślna wartość |
-| ----------------------------- | ------------------------------------------- | ---------------- |
-| `-d, --dir <dir>`              | Katalog źródłowy projektu                   | `.`              |
-| `-t, --template <template>`    | Szablon Handlebars do generowania promptu   | `eng`            |
-| `-f, --file <filename>`        | Nazwa pliku wynikowego                     | `ppllm.prompt.txt` |
-| `-p, --preset <preset...>`     | Preset(y) ignorowanych plików/folderów      | []               |
-| `-m, --max-size <size>`        | Maksymalny rozmiar pliku (np. 10MB, 5KB)    | `disable`        |
-| `-b, --binary <mode>`          | Tryb obsługi binarek (`tree`, `all`, `none`) | `tree`           |
-| `-e, --emoji`                  | Czy dodawać emoji do promptów               | `false`          |
+| Flaga                        | Opis                                       | Domyślna wartość |
+| --------------------------- | ------------------------------------------ | ---------------- |
+| `-d, --dir <dir>`            | Katalog źródłowy (relatywny do CWD)       | `.`              |
+| `-t, --template <template>`  | Szablon Handlebars                        | `eng`            |
+| `-f, --file <filename>`      | Nazwa pliku wynikowego                    | `ppllm.prompt.txt` |
+| `-p, --preset <preset...>`   | Presety ignorowanych plików               | []               |
+| `-m, --max-size <size>`      | Maks. rozmiar pliku (np. 10MB, 5KB)       | `disable`        |
+| `-b, --binary <mode>`        | Tryb plików binarnych (`tree`, `all`, `none`) | `tree`      |
+| `-e, --emoji`                | Emoji w promptach                         | `false`          |
 
+## 🧭 Inne opcje CLI
 
-## 🧭 Pozostałe opcje CLI
-
-| Flaga                          | Opis                                        | Domyślna wartość |
-| ----------------------------- | ------------------------------------------- | ---------------- |
-| `-o, --output <mode>`          | Wyjście: `stdout` lub `file`                | `file`           |
-| `-c, --config <filename>`      | Nazwa pliku konfiguracyjnego                | `ppllm.config.json` |
+| Flaga                        | Opis                                       | Domyślna wartość |
+| --------------------------- | ------------------------------------------ | ---------------- |
+| `-o, --output <mode>`        | Wyjście: `stdout` lub `file`               | `file`           |
+| `-c, --config <filename>`    | Nazwa pliku konfiguracyjnego               | `ppllm.config.json` |
 
 ## ⚖️ Licencja
 
