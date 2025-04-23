@@ -72,11 +72,58 @@ export default class CommandInit extends CommandGeneric<Options> {
     //
 
     async start() {
-        this.ppllm.logger.logBoxedMessage(`${Emoji.General.Working} Initializing settings...`);
+        this.ppllm.logger.logBoxedMessage(`${Emoji.General.Working} Initializing...`);
+        this.ppllm.logger.logEmptyLine();
+        
+        //
+        
+        const clonedTemplateFilename = await (async () => {
+            const genPromptTemplateDecision = await CLIPrompting.PromptChoiceInput("Do you want to generate local prompt template file and set it as default?", [
+                { name: "yes", short: "yes", value: true },
+                { name: "no", short: "no", value: false },
+            ], { defaultValue: false });
+            
+            //
+            
+            if (genPromptTemplateDecision) {
+                const filename = `ppllm.prompt.hbs`;
+                const filePath = path.resolve(process.cwd(), filename);
+                
+                //
+                
+                if (fs.existsSync(filePath)) {
+                    this.ppllm.logger.log(Emoji.General.Success, `File ${filename} already exists in current working directory, will be set as default.`);
+
+                    //
+
+                    return filename;
+                }
+                else {
+                    const defaultTemplateStr = Templates.Load(Templates.Default, false);
+                    
+                    fs.writeFileSync(filePath, defaultTemplateStr, "utf-8");
+                    
+                    //
+                    
+                    const relFilePath = path.relative(process.cwd(), filePath);
+                    
+                    this.ppllm.logger.log(Emoji.General.Saved, `Cloned default template to: ${relFilePath}`);
+                    
+                    //
+                    
+                    return filename;
+                }
+            }
+
+            //
+
+            return false;
+        })();
+        
         this.ppllm.logger.logEmptyLine();
 
         //
-
+        
         const promptedSettings: Partial<SettingsOptions> = {};
 
         //
@@ -86,7 +133,7 @@ export default class CommandInit extends CommandGeneric<Options> {
         }
 
         if (this.config.fromCLIUserProvidedSettings["template"] === undefined) {
-            promptedSettings["template"] = await this.promptSetting_template();
+            promptedSettings["template"] = clonedTemplateFilename || (await this.promptSetting_template());
         }
 
         if (this.config.fromCLIUserProvidedSettings["file"] === undefined) {
@@ -111,7 +158,7 @@ export default class CommandInit extends CommandGeneric<Options> {
 
         //
 
-        const merged: Partial<SettingsOptions> = {...this.config.userSettings, ...promptedSettings};
+        const merged: Partial<SettingsOptions> = { ...this.config.userSettings, ...promptedSettings };
 
         this.config.storeSettings(merged);
 
@@ -144,7 +191,7 @@ export default class CommandInit extends CommandGeneric<Options> {
                 validator: (input: string) => {
                     if (this.ppllm.cmderw.isValueValid(input, Validations["dir"]))
                         return true;
-    
+
                     return `Invalid directory path`;
                 }
             }
@@ -186,11 +233,11 @@ export default class CommandInit extends CommandGeneric<Options> {
             {
                 defaultValue: this.config.fromFileSettings["template"] ?? Defaults["template"],
                 validator: (input: string) => {
-                    if ( !input || input.trim().length === 0 )
+                    if (!input || input.trim().length === 0)
                         return `Filename can't be empty`;
-    
+
                     if (this.ppllm.cmderw.isValueValid(input, Validations["template"])) {
-                        if ( Templates.List.includes(input) ) {
+                        if (Templates.List.includes(input)) {
                             return true;
                         }
                         else {
@@ -205,7 +252,7 @@ export default class CommandInit extends CommandGeneric<Options> {
                             }
                         }
                     }
-    
+
                     return `Invalid template name/filename`;
                 },
                 placeholder: "filename"
@@ -221,7 +268,7 @@ export default class CommandInit extends CommandGeneric<Options> {
                 validator: (input: string) => {
                     if (this.ppllm.cmderw.isValueValid(input, Validations["file"]))
                         return true;
-    
+
                     return `Invalid filename`;
                 }
             }
@@ -269,7 +316,7 @@ export default class CommandInit extends CommandGeneric<Options> {
                 validator: (input: string) => {
                     if (this.ppllm.cmderw.isValueValid(input, Validations["maxSize"]))
                         return true;
-    
+
                     return `Invalid value`;
                 }
             }

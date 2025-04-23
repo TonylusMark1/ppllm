@@ -8,7 +8,6 @@ import CommandGeneric from "@/src/commands/Generic.js";
 import CommandInit from "@/src/commands/list/Init/index.js";
 import CommandGenerate from "@/src/commands/list/Generate/index.js";
 import CommandPreset from "@/src/commands/list/Preset/index.js";
-import CommandTemplate from "@/src/commands/list/Template/index.js";
 import CommandVersion from "@/src/commands/list/Version/index.js";
 
 import PresetLoader from './PresetLoader.js';
@@ -24,7 +23,6 @@ export default class PPLLM {
 		this.CommandsSet.add(CommandInit);
 		this.CommandsSet.add(CommandGenerate);
 		this.CommandsSet.add(CommandPreset);
-		this.CommandsSet.add(CommandTemplate);
 		this.CommandsSet.add(CommandVersion);
 	}
 
