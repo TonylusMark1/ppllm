@@ -92,7 +92,7 @@ export default class CommandInit extends CommandGeneric<Options> {
                 //
                 
                 if (fs.existsSync(filePath)) {
-                    this.ppllm.logger.log(Emoji.General.Success, `File ${filename} already exists in current working directory, will be set as default.`);
+                    this.ppllm.logger.log(Emoji.General.Success, `File '${filename}' already exists in current working directory, will be set as default.`);
 
                     //
 

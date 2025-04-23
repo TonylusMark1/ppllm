@@ -153,9 +153,13 @@ Presety **nie mogą być rozszerzane przez użytkownika**, ale możesz dodać w�
 
 ## 🎯 Przykłady użycia
 
+Generowanie promptu używając presetów `general` i `nodejs` oraz emoji:
+
 ```bash
 ppllm -p general nodejs -e
 ```
+
+Generowanie promptu do pliku z niestandardową nazwą:
 
 ```bash
 ppllm -f magic.prompt.txt
